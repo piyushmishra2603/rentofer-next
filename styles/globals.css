@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Project global reset and tokens (keeps core tokens from original site to preserve look) */
+:root{
+  --bg:#ffffff;--gold:#2563eb;--gold-lt:#3b82f6;--gold-dk:#1d4ed8;--teal:#10b981;--t0:#0f172a;--t1:#1f2937;--f-display:'Poppins',sans-serif;--f-body:'Inter',sans-serif;--f-label:'Manrope',sans-serif;
+}
+html,body,#__next{height:100%}
+body{font-family:var(--f-body);background:var(--bg);color:var(--t1);}
+
+/* Include the original page CSS to preserve exact visuals. Copied from the source index.html into public/original-index.css for parity. */
+@import url('/original-index.css');

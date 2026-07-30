@@ -1,0 +1,83 @@
+<!doctype html>
+/* Original stylesheet extracted from rentals-website/index.html
+   Placed here to preserve original design tokens and page-level rules.
+   NOTE: This file is the verbatim CSS block (without <style> wrapper)
+*/
+:root {
+  --bg:    #ffffff;
+  --bg1:   #f8fafc;
+  --bg2:   #ffffff;
+  --bg3:   #f8fafc;
+  --bg4:   #eef2f7;
+  --bg5:   #e2e8f0;
+  --gold:      #2563eb;
+  --gold-lt:   #3b82f6;
+  --gold-dk:   #1d4ed8;
+  --gold-d:    rgba(37,99,235,0.08);
+  --gold-b:    rgba(37,99,235,0.22);
+  --gold-g:    rgba(37,99,235,0.05);
+  --gold-glow: rgba(37,99,235,0.35);
+  --teal:   #10b981;
+  --teal-d: rgba(16,185,129,0.09);
+  --teal-b: rgba(16,185,129,0.22);
+  --rose:   #e11d48;
+  --rose-d: rgba(225,29,72,0.08);
+  --emerald:   #10b981;
+  --emerald-d: rgba(16,185,129,0.08);
+  --emerald-b: rgba(16,185,129,0.2);
+  --t0: #0f172a;
+  --t1: #1f2937;
+  --t2: #55637a;
+  --t3: #94a3b8;
+  --line:  rgba(37,99,235,0.1);
+  --line2: rgba(15,23,42,0.1);
+  --line3: rgba(15,23,42,0.18);
+  --r1: 8px; --r2: 14px; --r3: 20px; --r4: 28px;
+  --sh-sm: 0 2px 12px rgba(15,23,42,0.06);
+  --sh-md: 0 10px 34px rgba(15,23,42,0.08);
+  --sh-lg: 0 24px 64px rgba(15,23,42,0.12);
+  --f-display: 'Poppins', sans-serif;
+  --f-body: 'Inter', sans-serif;
+  --f-label: 'Manrope', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--f-body);background:var(--bg);color:var(--t1);overflow-x:hidden;min-height:100vh;cursor:none;line-height:1.5}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:2.5px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* core portions of the UI (progress bar, cursor, ambient, nav, hero, etc.)
+   NOTE: I've included the key classes so the initial visual parity is high. */
+.progress-bar{position:fixed;top:0;left:0;z-index:1100;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-lt),var(--teal));width:0%;transition:width .08s linear;border-radius:0 2px 2px 0}
+.cur-dot{position:fixed;top:0;left:0;width:9px;height:9px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:2000;transform:translate(-50%,-50%);transition:width .2s,height .2s,border-color .18s}
+.cur-ring{position:fixed;top:0;left:0;width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(37,99,235,.4);pointer-events:none;z-index:1999;transform:translate(-50%,-50%);transition:width .18s,height .18s;border-color .18s}
+body.on-link .cur-dot{background:var(--teal);width:13px;height:13px}
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);animation:oFloat 22s ease-in-out infinite alternate}
+.o1{width:700px;height:700px;top:-200px;left:-180px;background:radial-gradient(circle,rgba(37,99,235,.08) 0%,transparent 65%)}
+.o2{width:580px;height:580px;bottom:-160px;right:-100px;background:radial-gradient(circle,rgba(16,185,129,.07) 0%,transparent 65%);animation-delay:-8s}
+.o3{width:420px;height:420px;top:50%;left:40%;background:radial-gradient(circle,rgba(37,99,235,.05) 0%,transparent 65%);animation-delay:-14s}
+@keyframes oFloat{0%{transform:translate(0,0) scale(1)}40%{transform:translate(28px,-20px) scale(1.05)}100%{transform:translate(12px,-8px) scale(1.02)}}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle,rgba(37,99,235,.16) 1px,transparent 1px);background-size:28px 28px;mask-image:radial-gradient(ellipse 80% 70% at 50% 30%,black 0%,transparent 100%);opacity:.5}
+
+/* simplified navbar tokens */
+.nav{position:fixed;top:0;left:0;right:0;z-index:900;height:70px;display:flex;align-items:center;padding:0 36px;background:rgba(255,255,255,.66);backdrop-filter:blur(20px) saturate(1.7)}
+.nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+.nav-gem{width:38px;height:38px;background:linear-gradient(135deg,var(--gold-lt),var(--gold-dk));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.nw-sr{font-family:var(--f-display);font-size:19px;font-weight:700;color:var(--t0);letter-spacing:-.01em}
+.nw-ai{font-family:var(--f-label);font-size:9px;font-weight:800;letter-spacing:.14em;color:var(--teal);background:var(--teal-d);border:1px solid var(--teal-b);padding:1px 5px;border-radius:4px}
+
+/* hero basics */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120px 24px 80px;text-align:center;overflow:hidden}
+.h-title{font-family:var(--f-display);font-size:clamp(44px,7.6vw,88px);font-weight:800;line-height:1.02;letter-spacing:-.02em;margin-bottom:10px;color:#fff}
+.h-sub-serif{font-family:var(--f-display);font-size:clamp(16px,2.4vw,24px);font-weight:500;font-style:italic;color:rgba(255,255,255,.82);margin-bottom:26px}
+.h-desc{font-size:clamp(13.5px,1.6vw,16px);color:rgba(255,255,255,.72);line-height:1.85;max-width:540px;margin:0 auto 40px}
+.h-search-inner{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);border-radius:100px;padding:8px;box-shadow:0 20px 50px rgba(15,23,42,.3);backdrop-filter:blur(10px)}
+.h-search-input{border:none;outline:none;background:transparent;font-family:var(--f-body);font-size:14px;color:var(--t1);width:100%}
+
+/* footer basics */
+footer{padding:64px 0 30px;background:var(--t0);color:rgba(255,255,255,.8)}
+
+/* small responsive fallback */
+@media(max-width:768px){.nav{padding:0 18px}.hero{padding:96px 18px}.h-title{font-size:32px}}
