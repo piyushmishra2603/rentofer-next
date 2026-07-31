@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Figtree:wght@300;400;500;600&display=swap');
+
+.signup-page {
+  --bg0:       #060810;
+  --bg1:       #0b0f1a;
+  --bg2:       #111827;
+  --bg3:       #1a2235;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --accent:    #00e5c3;
+  --accent-dim:rgba(0,229,195,0.12);
+  --accent-glow:rgba(0,229,195,0.25);
+  --gold:      #f0b429;
+  --red:       #ff4d6a;
+  --red-dim:   rgba(255,77,106,0.1);
+  --orange:    #ff9040;
+  --green:     #22d88f;
+  --green-dim: rgba(34,216,143,0.1);
+  --txt0:      #e8eef7;
+  --txt1:      #7c8fa8;
+  --txt2:      #3d4f6a;
+  --shadow:    0 40px 100px rgba(0,0,0,0.8);
+}
+
+.signup-page *, .signup-page *::before, .signup-page *::after { box-sizing: border-box; }
+
+.signup-page {
+  font-family: 'Figtree', sans-serif;
+  background: var(--bg0);
+  color: var(--txt0);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.signup-page::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 65% 55% at 15% 5%,  rgba(0,229,195,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 45% at 85% 95%, rgba(240,180,41,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 50% at 50% 50%, rgba(11,15,26,0.95) 0%, transparent 100%);
+}
+.signup-page::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.signup-page .bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%);
+}
+
+.signup-page .card {
+  position: relative; z-index: 1;
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.03);
+  overflow: hidden;
+  animation: cardRise 0.7s cubic-bezier(0.2,0,0,1) both;
+}
+@keyframes cardRise { from { opacity: 0; transform: translateY(32px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.signup-page .card::before { content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+
+.signup-page .card-header { padding: 36px 40px 28px; border-bottom: 1px solid var(--border); text-align: center; }
+.signup-page .logo { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+.signup-page .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), #00b4d8); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--accent-glow); font-size: 16px; }
+.signup-page .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.signup-page .logo-text em { font-style: italic; color: var(--accent); }
+
+.signup-page .card-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.7px; line-height: 1.1; margin-bottom: 6px; }
+.signup-page .card-title span { color: var(--accent); }
+.signup-page .card-sub { font-size: 14px; color: var(--txt1); }
+
+.signup-page .steps { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 20px; }
+.signup-page .step-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.signup-page .step-dot {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border2); background: var(--bg2);
+  display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--txt2); transition: all 0.4s cubic-bezier(0.2,0,0,1); position: relative; z-index: 1;
+}
+.signup-page .step-dot.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); }
+.signup-page .step-dot.done { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+.signup-page .step-label { font-size: 10px; color: var(--txt2); letter-spacing: 0.5px; white-space: nowrap; }
+.signup-page .step-label.active { color: var(--accent); }
+.signup-page .step-label.done { color: var(--green); }
+.signup-page .step-line { width: 60px; height: 1px; background: var(--border2); margin: 0 4px; margin-bottom: 14px; transition: background 0.4s; }
+.signup-page .step-line.done { background: var(--green); }
+
+.signup-page .card-body { padding: 32px 40px 36px; }
+
+.signup-page .step-panel { display: none; }
+.signup-page .step-panel.active { display: block; animation: panelIn 0.45s cubic-bezier(0.2,0,0,1) both; }
+@keyframes panelIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+
+.signup-page .form-group { margin-bottom: 14px; }
+.signup-page .form-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--txt1); margin-bottom: 7px; }
+
+.signup-page .input-wrap { position: relative; display: flex; align-items: center; }
+.signup-page .input-icon { position: absolute; left: 14px; color: var(--txt2); flex-shrink: 0; pointer-events: none; transition: color 0.2s; }
+.signup-page .input-wrap:focus-within .input-icon { color: var(--accent); }
+
+.signup-page .field {
+  width: 100%; padding: 13px 14px 13px 42px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--txt0); font-family: 'Figtree', sans-serif; font-size: 15px; outline: none; transition: all 0.25s;
+}
+.signup-page .field::placeholder { color: var(--txt2); }
+.signup-page .field:focus { border-color: var(--accent); background: var(--bg3); box-shadow: 0 0 0 3px rgba(0,229,195,0.1); }
+.signup-page .field.error { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+.signup-page .field.valid { border-color: var(--green); }
+
+.signup-page .toggle-pass { position: absolute; right: 14px; background: none; border: none; color: var(--txt2); cursor: pointer; padding: 4px; transition: color 0.2s; display: flex; align-items: center; }
+.signup-page .toggle-pass:hover { color: var(--accent); }
+
+.signup-page .field-err { font-size: 11px; color: var(--red); margin-top: 5px; display: none; padding-left: 2px; }
+.signup-page .field-err.show { display: block; animation: errShake 0.3s ease; }
+@keyframes errShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+.signup-page .strength-row { display: flex; gap: 5px; margin-top: 8px; margin-bottom: 4px; }
+.signup-page .strength-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--bg3); transition: background 0.35s; }
+.signup-page .strength-label { font-size: 11px; color: var(--txt2); text-align: right; margin-bottom: 10px; transition: color 0.3s; }
+
+.signup-page .avatar-section { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 18px; }
+.signup-page .avatar-ring {
+  width: 82px; height: 82px; border-radius: 50%; border: 2px dashed var(--border2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color 0.25s; background: var(--bg2);
+}
+.signup-page .avatar-ring:hover { border-color: var(--accent); }
+.signup-page .avatar-ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none; position: absolute; inset: 0; }
+.signup-page .avatar-ring img.show { display: block; }
+.signup-page .avatar-plus { font-size: 24px; color: var(--txt2); transition: color 0.25s; }
+.signup-page .avatar-ring:hover .avatar-plus { color: var(--accent); }
+.signup-page .avatar-hint { font-size: 11px; color: var(--txt2); text-align: center; line-height: 1.5; }
+
+.signup-page .check-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+.signup-page .custom-check {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; border: 2px solid var(--border2); background: var(--bg2);
+  cursor: pointer; appearance: none; position: relative; margin-top: 1px; transition: all 0.2s;
+}
+.signup-page .custom-check:checked { background: var(--accent); border-color: var(--accent); }
+.signup-page .custom-check:checked::after { content: ''; position: absolute; top: 2px; left: 5px; width: 5px; height: 9px; border: 2px solid var(--bg0); border-top: none; border-left: none; transform: rotate(45deg); }
+.signup-page .check-label { font-size: 12px; color: var(--txt1); line-height: 1.5; cursor: pointer; }
+.signup-page .check-label a { color: var(--accent); text-decoration: none; }
+.signup-page .check-label a:hover { text-decoration: underline; }
+
+.signup-page .divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--txt2); font-size: 12px; }
+.signup-page .divider::before, .signup-page .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.signup-page .btn-primary {
+  width: 100%; padding: 15px; border-radius: 13px; border: none;
+  background: linear-gradient(135deg, var(--accent) 0%, #00b4d8 100%); color: var(--bg0);
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.2px; cursor: pointer;
+  position: relative; overflow: hidden; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.signup-page .btn-primary::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent); opacity: 0; transition: opacity 0.25s; }
+.signup-page .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--accent-glow); }
+.signup-page .btn-primary:hover::before { opacity: 1; }
+.signup-page .btn-primary:active { transform: translateY(0); }
+.signup-page .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.signup-page .btn-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(6,8,16,0.3); border-top-color: var(--bg0); animation: spin 0.7s linear infinite; display: none; }
+.signup-page .btn-primary.loading .btn-spinner { display: block; }
+.signup-page .btn-primary.loading .btn-txt { opacity: 0.6; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.signup-page .btn-google {
+  width: 100%; padding: 13px; border-radius: 13px; border: 1px solid var(--border2); background: var(--bg2); color: var(--txt0);
+  font-family: 'Figtree', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.25s; margin-top: 10px;
+}
+.signup-page .btn-google:hover { border-color: var(--accent); background: var(--bg3); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.signup-page .btn-google:active { transform: translateY(0); }
+.signup-page .google-icon { width: 18px; height: 18px; }
+
+.signup-page .btn-ghost {
+  background: none; border: 1px solid var(--border); color: var(--txt1); padding: 10px 20px; border-radius: 10px;
+  font-family: 'Figtree', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.signup-page .btn-ghost:hover { border-color: var(--border2); color: var(--txt0); }
+
+.signup-page .otp-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+.signup-page .otp-sub { font-size: 13px; color: var(--txt1); margin-bottom: 24px; line-height: 1.6; }
+.signup-page .otp-sub b { color: var(--txt0); }
+
+.signup-page .otp-boxes { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+.signup-page .otp-box {
+  width: 52px; height: 58px; border-radius: 12px; border: 1px solid var(--border2); background: var(--bg2); text-align: center;
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--accent); outline: none; transition: all 0.25s; caret-color: var(--accent);
+}
+.signup-page .otp-box:focus { border-color: var(--accent); background: var(--bg3); box-shadow: 0 0 0 3px rgba(0,229,195,0.12); }
+.signup-page .otp-box.filled { border-color: rgba(0,229,195,0.4); background: rgba(0,229,195,0.06); }
+.signup-page .otp-box.error { border-color: var(--red) !important; background: var(--red-dim) !important; animation: errShake 0.35s ease; }
+
+.signup-page .otp-resend { text-align: center; font-size: 13px; color: var(--txt1); margin-bottom: 20px; }
+.signup-page .otp-resend button { background: none; border: none; color: var(--accent); font-family: 'Figtree', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; transition: opacity 0.2s; }
+.signup-page .otp-resend button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.signup-page .otp-timer { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 20px; }
+.signup-page .timer-ring { position: relative; width: 64px; height: 64px; }
+.signup-page .timer-svg { transform: rotate(-90deg); }
+.signup-page .timer-track { fill: none; stroke: var(--bg3); stroke-width: 4; }
+.signup-page .timer-prog { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 163; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+.signup-page .timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: var(--txt0); }
+.signup-page .timer-label { font-size: 11px; color: var(--txt2); letter-spacing: 0.5px; text-transform: uppercase; }
+
+.signup-page .success-wrap { text-align: center; padding: 16px 0 8px; animation: successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes successPop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+.signup-page .success-icon {
+  width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; background: var(--green-dim); border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 0 40px rgba(34,216,143,0.2); animation: pulseGreen 2s ease-in-out infinite;
+}
+@keyframes pulseGreen { 0%,100% { box-shadow: 0 0 20px rgba(34,216,143,0.2); } 50% { box-shadow: 0 0 40px rgba(34,216,143,0.4); } }
+.signup-page .success-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+.signup-page .success-sub { font-size: 14px; color: var(--txt1); line-height: 1.6; margin-bottom: 28px; }
+
+.signup-page .card-footer { text-align: center; padding: 18px 40px 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--txt1); }
+.signup-page .card-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.signup-page .card-footer a:hover { text-decoration: underline; }
+
+.signup-page .toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 12px; padding: 12px 22px;
+  font-size: 14px; color: var(--txt0); box-shadow: 0 20px 50px rgba(0,0,0,0.6); z-index: 9999; opacity: 0; pointer-events: none;
+  transition: all 0.3s; display: flex; align-items: center; gap: 10px; white-space: nowrap;
+}
+.signup-page .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.signup-page .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.signup-page .toast.err .toast-dot { background: var(--red); }
+
+.signup-page .req-item { display:flex; align-items:center; gap:8px; }
+.signup-page .req-icon { font-size:13px; color:var(--txt2); transition:all 0.2s; }
+.signup-page .req-item.ok .req-icon { color:var(--green); }
+.signup-page .req-item.ok span { color:var(--txt0); }
