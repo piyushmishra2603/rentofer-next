@@ -241,4 +241,158 @@ ul { list-style: none; }
 @media(max-width:900px) { .pay-layout { grid-template-columns: 1fr; } }
 
 /* Left: plan selector + amount */
-.pay-left-card { background: var(--surface-2); border: 1.5px 
+.pay-left-card { background: var(--surface-2); border: 1.5px solid var(--line); border-radius: var(--r-xl); padding: 32px; }
+.pay-left-title { font-size: 18px; font-weight: 700; color: var(--t1); margin-bottom: 6px; letter-spacing: -.3px; }
+.pay-left-sub { font-size: 13.5px; color: var(--t2); margin-bottom: 22px; }
+
+.plan-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.ppill { padding: 8px 16px; border-radius: 20px; background: var(--white); border: 1.5px solid var(--line); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; color: var(--t2); }
+.ppill:hover { border-color: var(--line-2); color: var(--t1); }
+.ppill.gold  { background: var(--gold-pale); border-color: var(--gold-soft); color: var(--gold); }
+.ppill.blue  { background: var(--blue-pale); border-color: var(--blue-soft); color: var(--blue); }
+.ppill.teal  { background: var(--teal-pale); border-color: var(--teal-soft); color: var(--teal); }
+
+/* Amount display */
+.pay-amount-box { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--r-lg); padding: 24px; text-align: center; margin-bottom: 16px; }
+.pay-plan-name  { font-size: 13px; font-weight: 600; color: var(--t2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .8px; }
+.pay-price-big  { font-size: 52px; font-weight: 800; color: var(--blue); letter-spacing: -1.5px; line-height: 1; }
+.pay-price-sub  { font-size: 14px; color: var(--t2); margin-top: 4px; }
+.pay-free-tag   { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 6px 14px; border-radius: 20px; background: var(--green-pale); border: 1px solid var(--green-soft); font-size: 12.5px; font-weight: 600; color: var(--green); }
+
+/* Order summary lines */
+.order-summary { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 16px; }
+.os-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.os-row:last-child { border-bottom: none; }
+.os-key { color: var(--t2); }
+.os-val { font-weight: 600; color: var(--t1); }
+.os-val.green { color: var(--green); }
+
+/* Right: Razorpay payment card */
+.pay-card {
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--sh-lg);
+  position: sticky; top: 80px;
+}
+
+/* Payment card header */
+.pay-card-header {
+  background: linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);
+  padding: 22px 24px;
+  display: flex; align-items: center; gap: 12px;
+  position: relative; overflow: hidden;
+}
+.pay-card-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(37,99,235,.2),transparent); }
+.pch-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 22px; position: relative; z-index: 1; flex-shrink: 0; }
+.pch-text { position: relative; z-index: 1; }
+.pch-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.pch-sub   { font-size: 12px; color: rgba(255,255,255,.6); }
+.pch-ssl { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1; display: flex; align-items: center; gap: 5px; background: rgba(5,150,105,.2); border: 1px solid rgba(5,150,105,.4); border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #6ee7b7; font-weight: 600; }
+
+/* QR + UPI ID section */
+.pay-card-body { padding: 22px 24px; }
+
+.upi-merchant-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding: 14px 16px; background: var(--surface-2); border-radius: var(--r-md); border: 1px solid var(--line); }
+.merchant-logo { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg,#1e40af,#3b82f6); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.merchant-info { flex: 1; min-width: 0; }
+.merchant-name { font-size: 14px; font-weight: 700; color: var(--t1); }
+.merchant-upi  { font-size: 12px; color: var(--t2); font-family: monospace; margin-top: 2px; }
+.merchant-verified { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--green); background: var(--green-pale); border: 1px solid var(--green-soft); border-radius: 20px; padding: 2px 8px; margin-top: 3px; }
+
+/* ── Razorpay pay panel ── */
+.rzp-methods-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.rzp-method-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; background: var(--surface-2); border: 1px solid var(--line); font-size: 11.5px; font-weight: 600; color: var(--t2); }
+
+.rzp-pay-box { text-align: center; padding: 8px 0 20px; }
+.rzp-pay-btn { width: 100%; padding: 16px; font-size: 16px; }
+.rzp-pay-sub { font-size: 12px; color: var(--t3); margin-top: 10px; }
+
+/* Progress / status states inside the pay card */
+.pay-status { display: none; flex-direction: column; align-items: center; gap: 14px; padding: 28px 10px; text-align: center; }
+.pay-status.show { display: flex; }
+.pay-spinner { width: 46px; height: 46px; border-radius: 50%; border: 4px solid var(--blue-soft); border-top-color: var(--blue); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.pay-status-title { font-size: 15px; font-weight: 700; color: var(--t1); }
+.pay-status-sub { font-size: 13px; color: var(--t2); max-width: 280px; }
+.pay-status-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; }
+.pay-status-icon.err { background: #fef2f2; border: 2px solid #fecaca; }
+.pay-status-icon.ok  { background: var(--green-pale); border: 2px solid #6ee7b7; }
+.pay-status-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+.utr-section label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--t2); margin-bottom: 8px; }
+
+.pay-card-footer { padding: 16px 24px; border-top: 1px solid var(--line); background: var(--surface-2); }
+.trust-badges-mini { display: flex; flex-wrap: wrap; gap: 8px; }
+.tb { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--t3); }
+.tb .ti { font-size: 12px; }
+/* RBI badge */
+.rbi-badge { background: linear-gradient(135deg,#1e40af,#1d4ed8); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+.rzp-badge { background: linear-gradient(135deg,#0a2540,#072654); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: .3px; }
+
+/* ── TESTIMONIALS ── */
+.testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+@media(max-width:768px){ .testi-grid { grid-template-columns: 1fr; } }
+@media(min-width:601px) and (max-width:768px){ .testi-grid { grid-template-columns: repeat(2,1fr); } }
+.testi-card { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--sh-xs); transition: all .25s; }
+.testi-card:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); border-color: var(--line-2); }
+.stars { color: #f59e0b; font-size: 14px; margin-bottom: 10px; }
+.testi-text { font-size: 14px; color: var(--t2); line-height: 1.65; margin-bottom: 16px; font-style: italic; }
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; background: var(--surface-2); border: 1.5px solid var(--line); flex-shrink: 0; }
+.testi-name { font-weight: 700; font-size: 14px; color: var(--t1); }
+.testi-meta { font-size: 12px; color: var(--t3); margin-top: 1px; }
+.testi-plan { font-size: 11.5px; color: var(--blue); font-weight: 600; margin-top: 2px; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(15,23,42,.55); backdrop-filter: blur(8px); display: none; place-items: center; padding: 20px; }
+.modal-overlay.open { display: grid; animation: mfade .3s ease; }
+@keyframes mfade { from{opacity:0}to{opacity:1} }
+.modal-box { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--r-xl); padding: 52px 44px; max-width: 480px; width: 100%; text-align: center; position: relative; box-shadow: var(--sh-xl); animation: mslide .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes mslide { from{transform:translateY(32px) scale(.96);opacity:0}to{transform:none;opacity:1} }
+.modal-box canvas { position: absolute; inset: 0; pointer-events: none; border-radius: var(--r-xl); }
+.modal-check { width: 76px; height: 76px; border-radius: 50%; background: var(--green-pale); border: 2px solid #6ee7b7; display: grid; place-items: center; margin: 0 auto 22px; font-size: 34px; animation: mpop .6s cubic-bezier(.34,1.56,.64,1) .15s both; }
+@keyframes mpop { from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0)} }
+.modal-title { font-size: 24px; font-weight: 800; color: var(--t1); margin-bottom: 8px; letter-spacing: -.4px; }
+.modal-sub   { font-size: 14px; color: var(--t2); line-height: 1.6; margin-bottom: 24px; }
+.modal-trial-box { background: var(--green-pale); border: 1px solid var(--green-soft); border-radius: var(--r); padding: 14px 16px; margin-bottom: 24px; }
+.modal-trial-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--t3); margin-bottom: 5px; }
+.modal-trial-dates { font-size: 15px; font-weight: 700; color: var(--green); }
+.modal-btns { display: flex; flex-direction: column; gap: 9px; }
+.modal-close { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: var(--r-sm); background: var(--surface-2); border: none; color: var(--t2); display: grid; place-items: center; font-size: 16px; cursor: pointer; transition: all .2s; }
+.modal-close:hover { background: var(--line); color: var(--t1); }
+
+/* ── SIGN-IN REQUIRED ── */
+.signin-required { text-align:center; padding:28px; background:var(--blue-pale); border:1.5px solid var(--blue-soft); border-radius:var(--r-lg); margin-bottom:16px; }
+.signin-required p { color:var(--blue); font-size:14px; font-weight:600; margin-bottom:12px; }
+
+/* ── SCROLL REVEAL ── */
+.reveal { opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease; }
+.reveal.in { opacity:1; transform:none; }
+.d1{transition-delay:.07s} .d2{transition-delay:.14s} .d3{transition-delay:.21s} .d4{transition-delay:.28s} .d5{transition-delay:.35s}
+
+/* ── FOOTER ── */
+.footer { padding: 24px 0; border-top: 1px solid var(--line); background: var(--white); }
+.footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12.5px; color: var(--t3); }
+.footer-inner a { color: var(--t2); transition: color .15s; }
+.footer-inner a:hover { color: var(--blue); }
+
+/* ── TOASTS ── */
+#toasts { position: fixed; bottom: 22px; right: 22px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+.toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--r); background: var(--white); border: 1.5px solid var(--line); box-shadow: var(--sh-xl); font-size: 13.5px; font-weight: 500; color: var(--t1); max-width: 300px; animation: tfade .3s ease; }
+@keyframes tfade { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none} }
+.toast.info    { border-color: var(--blue-soft); }
+.toast.success { border-color: var(--green-soft); }
+.toast.err     { border-color: #fecaca; }
+
+@media(max-width:768px) {
+  .promo-card { padding: 24px 20px; gap: 18px; }
+  .countdown  { display: none; }
+  .plan-card  { padding: 24px 20px; }
+  .price-num  { font-size: 32px; }
+  .cmp-table th, .cmp-table td { padding: 11px 13px; font-size: 12px; }
+  .modal-box  { padding: 36px 22px; }
+  .stats-bar .stat-cell { min-width: 110px; padding: 18px 12px; }
+  .pay-price-big { font-size: 40px; }
+}
