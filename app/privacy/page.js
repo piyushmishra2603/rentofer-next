@@ -90,7 +90,14 @@ export default function PrivacyPolicyPage() {
   return (
     <>
       <div className="reading-progress"><div className="reading-progress-bar" style={{ width: `${progress}%` }} /></div>
-      <div className={`scroll-top ${showTop ? "visible" : ""}`} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑</div>
+      <button
+        type="button"
+        className={`scroll-top ${showTop ? "visible" : ""}`}
+        aria-label="Scroll to top"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      >
+        ↑
+      </button>
 
       <div className="layout">
         <aside className="sidebar">
@@ -123,7 +130,7 @@ export default function PrivacyPolicyPage() {
               <span className="cbadge cbadge-teal">GDPR-Ready</span>
               <span className="cbadge cbadge-teal">Firebase TOS</span>
             </div>
-            <button className="print-btn" onClick={() => window.print()}>🖨️ Print / Save PDF</button>
+            <button type="button" className="print-btn" onClick={() => window.print()}>🖨️ Print / Save PDF</button>
           </div>
         </aside>
 
@@ -159,7 +166,7 @@ export default function PrivacyPolicyPage() {
             <div className="section-number">01 — OVERVIEW &amp; SCOPE</div>
             <h2 className="section-title">Overview &amp; Scope of This Policy</h2>
             <div className="section-body">
-              <p>SmartRent AI is a technology-driven rental property platform that enables landlords to list properties and tenants to discover, book, and manage rental accommodations. This Privacy Policy applies to:</p>
+              <p>SmartRent AI is a technology-driven rental property platform that enables landlords to list properties and tenants to discover, book, and manage rental accommodations. This Privacy Policy covers the processing of personal data in connection with those services.</p>
               <PolicyList items={[
                 "All users who register an account on smartrentai.in or any associated subdomain",
                 "Visitors who browse our platform without creating an account",
@@ -168,7 +175,7 @@ export default function PrivacyPolicyPage() {
                 "Administrators and verified agents who manage listings on our platform",
               ]} />
               <div className="highlight-box">
-                <strong>Governing Law:</strong> This policy is governed by and construed in accordance with the Information Technology Act, 2000 (as amended), the Information Technology (Amendment) Act, 2008, the Digital Personal Data Protection Act, 2023 (DPDP Act), and applicable rules issued thereunder. For users accessing from the European Economic Area, we also comply with the General Data Protection Regulation (GDPR) to the extent applicable.
+                <strong>Governing Law:</strong> This policy is governed by and construed in accordance with the Information Technology Act, 2000 (as amended), the Information Technology (Amendment) Act, 2008, and the Digital Personal Data Protection Act, 2023, together with applicable rules and regulations.
               </div>
               <p>This policy does NOT apply to third-party websites or services linked from our platform. We encourage you to review the privacy policies of any third-party sites you visit.</p>
             </div>
@@ -255,7 +262,7 @@ export default function PrivacyPolicyPage() {
               </div>
 
               <div className="highlight-box">
-                <strong>Marketing Communications:</strong> We may send you promotional emails about new features or relevant listings only if you opt in. You may withdraw consent at any time by clicking "Unsubscribe" in any email or updating your notification preferences in your Account Settings.
+                <strong>Marketing Communications:</strong> We may send you promotional emails about new features or relevant listings only if you opt in. You may withdraw consent at any time by clicking the unsubscribe link in any communication or by contacting us at privacy@smartrentai.in.
               </div>
             </div>
           </div>
@@ -278,7 +285,7 @@ export default function PrivacyPolicyPage() {
                 ]}
               />
               <div className="warn-box">
-                <strong>⚠️ Important:</strong> If a law enforcement agency, court, or government authority provides us with a legally valid order requiring disclosure of your data, we are obligated to comply. Where legally permissible, we will notify you before disclosing your information.
+                <strong>⚠️ Important:</strong> If a law enforcement agency, court, or government authority provides us with a legally valid order requiring disclosure of your data, we are obligated to comply to the extent required by law.
               </div>
             </div>
           </div>
@@ -299,7 +306,7 @@ export default function PrivacyPolicyPage() {
                   ["Performance", "Page load timing, API response benchmarks", "30 days", "Yes"],
                 ]}
               />
-              <p>You may manage cookie preferences through your browser settings. Note that disabling essential cookies will prevent you from logging in or using core platform features. We do not currently use advertising or third-party tracking cookies.</p>
+              <p>You may manage cookie preferences through your browser settings. Note that disabling essential cookies will prevent you from logging in or using core platform features. We do not currently operate a separate opt-out mechanism for mandatory authentication cookies.</p>
             </div>
           </div>
           <div className="divider" />
@@ -315,16 +322,16 @@ export default function PrivacyPolicyPage() {
                 Manages user registration, login sessions (email/password and Google OAuth), and token-based session verification. Firebase stores encrypted password hashes; we never have access to your plaintext password.
               </InfoCard>
               <InfoCard title="🗄️ Cloud Firestore">
-                Our primary database stores user profiles, property listings, booking records, and subscription data. Firestore data is encrypted at rest (AES-256) and in transit (TLS 1.2+). Security Rules restrict access so users can only read/write their own authorized data.
+                Our primary database stores user profiles, property listings, booking records, and subscription data. Firestore data is encrypted at rest (AES-256) and in transit (TLS 1.2+). Security is enforced through Firebase rules and access controls.
               </InfoCard>
               <InfoCard title="📊 Firebase Analytics & Crashlytics">
-                Collects anonymized usage events and crash reports to help us improve stability. Data is processed by Google as described in their Privacy Policy. You may opt out of analytics through your Account Settings.
+                Collects anonymized usage events and crash reports to help us improve stability. Data is processed by Google as described in their Privacy Policy. You may opt out of analytics through your browser or device settings.
               </InfoCard>
               <InfoCard title="🗃️ Firebase Storage">
                 Stores property photos, profile pictures, and uploaded documents. Files are secured with Firebase Security Rules and served over signed URLs with expiry.
               </InfoCard>
 
-              <p>Google Firebase's data processing is governed by Google's Privacy Policy at <code>policies.google.com/privacy</code> and the Google Cloud Data Processing Addendum. SmartRent AI has executed a Data Processing Agreement with Google.</p>
+              <p>Google Firebase's data processing is governed by Google's Privacy Policy at <code>policies.google.com/privacy</code> and the Google Cloud Data Processing Addendum. SmartRent AI has implemented appropriate administrative and technical safeguards for its use of Firebase services.</p>
             </div>
           </div>
           <div className="divider" />
@@ -347,7 +354,7 @@ export default function PrivacyPolicyPage() {
                 "Sensitive fields (Aadhaar last 4 digits) masked in database queries and logs",
               ]} />
               <div className="warn-box">
-                <strong>⚠️ No system is 100% secure.</strong> While we strive to protect your data, we cannot guarantee absolute security of information transmitted over the internet. In the event of a data breach that poses a significant risk to you, we will notify you and the appropriate regulatory authority within 72 hours as required by applicable law.
+                <strong>⚠️ No system is 100% secure.</strong> While we strive to protect your data, we cannot guarantee absolute security of information transmitted over the internet. In the event of a breach, we will notify affected users and regulators as required by law.
               </div>
             </div>
           </div>
@@ -372,7 +379,7 @@ export default function PrivacyPolicyPage() {
                   ["Deleted account data", "30-day grace period, then permanent deletion", "Full erasure except legally mandated records"],
                 ]}
               />
-              <p>When you delete your account, we initiate a 30-day grace period during which you may restore your account. After this period, all personal data is permanently and irrecoverably deleted, except where retention is required by law (e.g., financial records).</p>
+              <p>When you delete your account, we initiate a 30-day grace period during which you may restore your account. After this period, all personal data is permanently and irrecoverably deleted, except where legal retention obligations require otherwise.</p>
             </div>
           </div>
           <div className="divider" />
@@ -382,7 +389,7 @@ export default function PrivacyPolicyPage() {
             <div className="section-number">09 — YOUR LEGAL RIGHTS</div>
             <h2 className="section-title">Your Rights as a Data Principal</h2>
             <div className="section-body">
-              <p>Under the Digital Personal Data Protection Act, 2023 (DPDP Act) and applicable Indian law, you have the following rights. We will respond to verified requests within <strong style={{ color: "var(--teal)" }}>30 days</strong>.</p>
+              <p>Under the Digital Personal Data Protection Act, 2023 (DPDP Act) and applicable Indian law, you have the following rights. We will respond to verified requests within <strong style={{ color: "var(--white)" }}>30 days</strong> unless a longer period is required by applicable law.</p>
 
               <RightsGrid items={[
                 ["📋", "Right to Access", "Request a copy of all personal data we hold about you, including categories, sources, and purposes of processing."],
@@ -395,7 +402,7 @@ export default function PrivacyPolicyPage() {
                 ["⚖️", "Right to Grievance Redressal", "Lodge a complaint with our Grievance Officer. Unresolved complaints may be escalated to the Data Protection Board of India."],
               ]} />
 
-              <p style={{ marginTop: 20 }}>To exercise any of these rights, email us at <code>privacy@smartrentai.in</code> with the subject line "Privacy Rights Request" and your registered email address. We may ask you to verify your identity before processing the request.</p>
+              <p style={{ marginTop: 20 }}>To exercise any of these rights, email us at <code>privacy@smartrentai.in</code> with the subject line "Privacy Rights Request" and your registered email address; we may ask for additional verification to protect your account.</p>
             </div>
           </div>
           <div className="divider" />
@@ -407,9 +414,9 @@ export default function PrivacyPolicyPage() {
             <div className="section-body">
               <p>SmartRent AI is not directed at individuals under the age of <strong style={{ color: "var(--white)" }}>18 years</strong>. We do not knowingly collect personal data from minors.</p>
               <div className="warn-box">
-                <strong>⚠️ Age Restriction:</strong> By creating an account or using SmartRent AI, you represent and warrant that you are at least 18 years of age and have the legal capacity to enter into binding contracts under applicable law. If you are a parent or guardian and believe your minor child has provided us with personal data, please contact us immediately at <strong>privacy@smartrentai.in</strong> and we will delete such data within 7 business days.
+                <strong>⚠️ Age Restriction:</strong> By creating an account or using SmartRent AI, you represent and warrant that you are at least 18 years of age and have the legal capacity to enter into this agreement.
               </div>
-              <p>Where SmartRent AI becomes aware that data has been collected from a minor, we will take immediate steps to delete such data and terminate the associated account. We reserve the right to request age verification documents at any time.</p>
+              <p>Where SmartRent AI becomes aware that data has been collected from a minor, we will take immediate steps to delete such data and terminate the associated account. We reserve the right to cooperate with law enforcement or relevant authorities when required.</p>
             </div>
           </div>
           <div className="divider" />
@@ -419,11 +426,11 @@ export default function PrivacyPolicyPage() {
             <div className="section-number">11 — INTERNATIONAL TRANSFERS</div>
             <h2 className="section-title">International Data Transfers</h2>
             <div className="section-body">
-              <p>SmartRent AI is operated from India. However, some of our third-party service providers (including Google Firebase) may process data on servers located outside India, including in the United States and the European Union.</p>
+              <p>SmartRent AI is operated from India. However, some of our third-party service providers (including Google Firebase) may process data on servers located outside India, including in other jurisdictions. </p>
               <PolicyList items={[
-                "Google Firebase may process data in its global data centers. Google maintains Standard Contractual Clauses and adequate safeguards for cross-border transfers under applicable data protection laws.",
+                "Google Firebase may process data in its global data centers. Google maintains standard contractual safeguards and adequate protections for cross-border transfers under applicable data protection laws.",
                 "Any international transfer of data is conducted subject to appropriate safeguards including Data Processing Agreements and standard contractual clauses.",
-                "By using SmartRent AI, you consent to the transfer of your information to countries outside India that may have different data protection standards, subject to the safeguards described herein.",
+                "By using SmartRent AI, you consent to the transfer of your information to countries outside India that may have different data protection standards, subject to the safeguards described above.",
                 "We will comply with applicable provisions of the DPDP Act 2023 regarding cross-border data transfers once the relevant rules are notified by the Government of India.",
               ]} />
             </div>
@@ -441,14 +448,14 @@ export default function PrivacyPolicyPage() {
                 We use your search history, saved properties, and location preferences to surface relevant listings. This is a convenience feature and does not affect any legal rights or entitlements.
               </InfoCard>
               <InfoCard title="🛡️ Fraud & Spam Detection">
-                Automated systems flag suspicious listings and user behavior patterns. Flagged content is reviewed by a human admin before action is taken. You may request human review of any automated decision affecting your account by contacting our Grievance Officer.
+                Automated systems flag suspicious listings and user behavior patterns. Flagged content is reviewed by a human admin before action is taken. You may request human review of any automated decision that materially affects you.
               </InfoCard>
               <InfoCard title="📊 Pricing Insights">
                 Where available, AI-powered market analytics provide landlords with rental price benchmarks. These are informational only and do not constitute binding valuations or legal advice.
               </InfoCard>
 
               <div className="highlight-box">
-                <strong>Your Rights:</strong> No fully automated decision that produces a significant legal effect on you will be made without opportunity for human review. If you believe an automated decision has unfairly affected your account, contact us at <strong>grievance@smartrentai.in</strong> to request manual review within 30 days of the decision.
+                <strong>Your Rights:</strong> No fully automated decision that produces a significant legal effect on you will be made without opportunity for human review. If you believe an automated decision has adversely affected you, contact us at privacy@smartrentai.in.
               </div>
             </div>
           </div>
@@ -461,14 +468,14 @@ export default function PrivacyPolicyPage() {
             <div className="section-body">
               <p>We may update this Privacy Policy periodically to reflect changes in our practices, technology, legal requirements, or for other legitimate business reasons.</p>
               <PolicyList items={[
-                'We will post the updated policy on this page with a revised "Last Updated" date at the top',
-                <>For material changes that significantly affect your rights or how we process your data, we will notify you via email (to your registered address) at least <strong style={{ color: "var(--white)" }}>30 days</strong> before the changes take effect</>,
-                "Your continued use of SmartRent AI after the effective date of changes constitutes acceptance of the updated policy",
-                "If you do not agree with the updated policy, you must discontinue use and may request account deletion before the effective date",
-                <>Previous versions of this policy are available on request by emailing <code>privacy@smartrentai.in</code></>,
+                'We will post the updated policy on this page with a revised "Last Updated" date at the top.',
+                <>For material changes that significantly affect your rights or how we process your data, we will notify you via email (to your registered address) at least <strong style={{ color: "var(--white)" }}>30 days</strong> before they take effect.</>,
+                "Your continued use of SmartRent AI after the effective date of changes constitutes acceptance of the updated policy.",
+                "If you do not agree with the updated policy, you must discontinue use and may request account deletion before the effective date.",
+                <>Previous versions of this policy are available on request by emailing <code>privacy@smartrentai.in</code>.</>,
               ]} />
               <div className="highlight-box">
-                <strong>Version History:</strong> v1.0 (Jan 2025) — Initial release. v2.0 (Sep 2025) — Added DPDP Act 2023 alignment, Firebase data processing details, AI decision-making disclosures. v3.1 (Apr 2026) — Updated retention schedules, enhanced international transfer provisions, added Rights Grid.
+                <strong>Version History:</strong> v1.0 (Jan 2025) — Initial release. v2.0 (Sep 2025) — Added DPDP Act 2023 alignment, Firebase data processing details, AI decision-making disclosures. v3.1 (Apr 2026) — Updated retention periods and rights language.
               </div>
             </div>
           </div>
@@ -479,7 +486,7 @@ export default function PrivacyPolicyPage() {
             <div className="section-number">14 — GRIEVANCE &amp; CONTACT</div>
             <h2 className="section-title">Grievance Officer &amp; Contact</h2>
             <div className="section-body">
-              <p>In accordance with the Information Technology Act, 2000 and the Digital Personal Data Protection Act, 2023, we have appointed a Grievance Officer to address complaints and questions regarding the processing of your personal data.</p>
+              <p>In accordance with the Information Technology Act, 2000 and the Digital Personal Data Protection Act, 2023, we have appointed a Grievance Officer to address complaints and questions related to your privacy or personal data.</p>
 
               <div className="contact-card">
                 <div className="contact-title">Contact Our Grievance Officer</div>
@@ -495,7 +502,7 @@ export default function PrivacyPolicyPage() {
 
               <div className="subsection">
                 <div className="subsection-title">Escalation to Data Protection Board</div>
-                <p style={{ fontSize: 14 }}>If you are not satisfied with the resolution provided by our Grievance Officer, you have the right to approach the <strong style={{ color: "var(--white)" }}>Data Protection Board of India</strong> once it is constituted under the DPDP Act, 2023. For grievances related to EU data subjects, you may also contact the relevant supervisory authority in your EU member state.</p>
+                <p style={{ fontSize: 14 }}>If you are not satisfied with the resolution provided by our Grievance Officer, you have the right to approach the <strong style={{ color: "var(--white)" }}>Data Protection Board of India</strong> or the appropriate authority under the law for further redressal.</p>
               </div>
             </div>
           </div>
@@ -506,7 +513,7 @@ export default function PrivacyPolicyPage() {
               Version 3.1 · Effective 01 January 2025 · Last Updated 09 April 2026<br />
               © 2025–2026 SmartRent AI. All rights reserved.<br /><br />
               <em style={{ fontSize: 11, color: "rgba(148,163,184,0.5)" }}>
-                This policy is provided for informational purposes and is intended to comply with applicable Indian law including the IT Act 2000, DPDP Act 2023, and related rules. It does not constitute legal advice. We recommend consulting a qualified legal professional for your specific circumstances.
+                This policy is provided for informational purposes and is intended to comply with applicable Indian law including the IT Act 2000, DPDP Act 2023, and related rules. It does not constitute legal advice.
               </em>
             </div>
             <div className="footer-legal">
