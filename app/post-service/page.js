@@ -2,13 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import "./page.css";
-
-const LS_KEY = "sr_subscription";
-const LS_SVC_KEY = "sr_service_subscription";
-const PRICE = 249;
 
 const CLOUD_NAME = "dq3hko9hn";
 const UPLOAD_PRESET = "dl6dnzau";
@@ -79,7 +75,6 @@ const BODY_HTML = `
   <div class="nav-right">
     <a href="/" class="nav-link">🏠 Home</a>
     <a href="/services" class="nav-link">🔧 Services</a>
-    <a href="/plans" class="nav-link">💎 Plans</a>
     <div class="auth-pill" id="authPill">
       <div class="auth-dot off" id="authDot"></div>
       <span class="auth-name" id="authName">Loading…</span>
@@ -118,7 +113,7 @@ const BODY_HTML = `
 
       <div class="info-row info" style="margin-top:18px">
         <span class="ii">ℹ️</span>
-        <div>All plans include a <strong>3-month FREE trial</strong>. After trial, billing is <strong>₹249/month</strong>. Cancel any time from your dashboard.</div>
+        <div>Listing your service is completely <strong>free</strong>. No plans, no payment, no trial — just publish and go live.</div>
       </div>
 
       <div class="btn-row">
@@ -287,13 +282,11 @@ const BODY_HTML = `
       </div>
     </div>
 
-    <div id="submitArea">
-      <div class="sub-checking"><div class="spin"></div>Checking subscription…</div>
-    </div>
-
     <div class="btn-row" style="margin-top:0;border-top:none">
       <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
-      <div id="submitBtnArea"></div>
+      <button class="btn btn-success btn-lg" id="submitBtn" onclick="submitListing()">
+        🚀 Publish Listing
+      </button>
     </div>
 
   </div>
@@ -327,203 +320,10 @@ export default function PostServicePage() {
     let selTags = new Set();
     let photoFiles = [];
     let currentUser = null;
-    let subStatus = null;
     let currentStep = 1;
-
-    /* ── SUBSCRIPTION CHECK ── */
-    function _isLocalSubValid(sub) {
-      if (!sub) return false;
-      if (sub.status !== "trial_active" && sub.status !== "active") return false;
-      if (sub.trialEndDate && new Date(sub.trialEndDate) < new Date()) return false;
-      return true;
-    }
-    function _getServicePlanIds() {
-      return new Set(SERVICES.map((s) => s.id));
-    }
-    async function checkServiceSubscription(uid) {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw) {
-          const sub = JSON.parse(raw);
-          const svcPlanIds = _getServicePlanIds();
-          if (svcPlanIds.has(sub.planId) && _isLocalSubValid(sub)) {
-            return { hasAccess: true, planName: sub.planName || "Service Plan", source: "localStorage" };
-          }
-        }
-      } catch (e) {}
-      try {
-        const raw = localStorage.getItem(LS_SVC_KEY);
-        if (raw) {
-          const sub = JSON.parse(raw);
-          if (_isLocalSubValid(sub)) {
-            return { hasAccess: true, planName: sub.planName || "Service Plan", source: "localStorage:svc" };
-          }
-        }
-      } catch (e) {}
-      try {
-        try {
-          const subSnap = await getDoc(doc(db, "subscriptions", uid));
-          if (subSnap.exists()) {
-            const s = subSnap.data();
-            const active = s.status === "active" || s.status === "trial_active";
-            let notExpired = true;
-            const expField = s.trialEndDate || s.expiresAt;
-            if (expField) {
-              const e = expField.toDate ? expField.toDate() : new Date(expField);
-              notExpired = e > new Date();
-            }
-            if (active && notExpired) {
-              return { hasAccess: true, planName: s.plan ? s.plan + " Plan" : "Service Plan", source: "firestore:subscriptions" };
-            }
-          }
-        } catch (e) {}
-
-        const snap = await getDoc(doc(db, "users", uid));
-        if (!snap.exists()) return { hasAccess: false, planName: null, source: "firestore:no-doc" };
-        const data = snap.data();
-
-        const sub = data.subscription || data.serviceSubscription || null;
-        if (sub) {
-          const svcPlanIds = _getServicePlanIds();
-          const planOk = !sub.plan || svcPlanIds.has(String(sub.plan).toLowerCase());
-          const active = sub.status === "active" || sub.active === true;
-          let notExp = true;
-          if (sub.expiresAt) {
-            const e = sub.expiresAt.toDate ? sub.expiresAt.toDate() : new Date(sub.expiresAt);
-            notExp = e > new Date();
-          }
-          if (planOk && active && notExp) return { hasAccess: true, planName: sub.plan || "Service Plan", source: "firestore:sub" };
-        }
-
-        if (data.serviceProvider === true || data.isProvider === true || data.canListService === true) {
-          return { hasAccess: true, planName: data.planName || "Service Plan", source: "firestore:flags" };
-        }
-        const roles = Array.isArray(data.roles) ? data.roles : [data.role || ""];
-        if (roles.some((r) => ["provider", "professional", "service_pro"].includes(String(r).toLowerCase()))) {
-          return { hasAccess: true, planName: data.planName || "Service Plan", source: "firestore:roles" };
-        }
-        return { hasAccess: false, planName: null, source: "firestore:no-match" };
-      } catch (err) {
-        console.error("Sub check error:", err);
-        return { hasAccess: false, planName: null, source: "error", error: err.message };
-      }
-    }
 
     function esc(s) {
       return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    /* ── RENDER SUBMIT AREA ── */
-    function renderSubmitArea(hasAccess, planName) {
-      const area = $("submitArea");
-      const btnArea = $("submitBtnArea");
-      if (!area) return;
-
-      if (hasAccess) {
-        area.innerHTML = `
-          <div class="info-row success" style="margin-top:0;margin-bottom:16px">
-            <span class="ii">✅</span>
-            <div><strong>Subscription active</strong> — you're ready to publish your listing.</div>
-          </div>`;
-        btnArea.innerHTML = `
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
-            <div class="sub-badge">
-              <div class="sb-dot"></div>
-              PLAN ACTIVE
-              <span class="sb-plan">${esc(planName || "Service Plan")}</span>
-            </div>
-            <button class="btn btn-success btn-lg" id="submitBtn" onclick="submitListing()">
-              🚀 Publish Listing
-            </button>
-          </div>`;
-      } else {
-        area.innerHTML = `
-          <div class="sub-gate">
-            <div class="sg-banner">
-              <div class="sg-inner">
-                <div class="sg-lock">🔒</div>
-                <div class="sg-text">
-                  <div class="sg-title">Service Plan Required</div>
-                  <div class="sg-sub">Activate a free trial or subscribe to publish your listing and start getting leads.</div>
-                </div>
-                <div class="sg-chip">SERVICE PLAN · ₹${PRICE}/mo</div>
-              </div>
-            </div>
-            <div class="sg-body">
-              <div class="sg-perks">
-                <div class="sg-perk"><span class="sg-perk-ic">📋</span><div><div class="sg-perk-title">Your Listing Goes Live</div><div class="sg-perk-desc">Visible instantly to homeowners searching your service type.</div></div></div>
-                <div class="sg-perk"><span class="sg-perk-ic">💎</span><div><div class="sg-perk-title">Verified Professional Badge</div><div class="sg-perk-desc">Builds trust and increases booking rate.</div></div></div>
-                <div class="sg-perk"><span class="sg-perk-ic">📞</span><div><div class="sg-perk-title">Call &amp; WhatsApp Visible</div><div class="sg-perk-desc">Customers can reach you directly, no middlemen.</div></div></div>
-                <div class="sg-perk"><span class="sg-perk-ic">🎁</span><div><div class="sg-perk-title">3 Months FREE Trial</div><div class="sg-perk-desc">No upfront cost — ₹${PRICE}/mo only after trial ends.</div></div></div>
-              </div>
-              <div class="sg-cta">
-                <div class="sg-cta-text">
-                  <div class="sg-cta-title">Activate a free trial to publish</div>
-                  <div class="sg-cta-sub">Already activated? <a onclick="recheckSub()">Refresh subscription status</a></div>
-                </div>
-                <div class="sg-cta-btns">
-                  <a href="/plans" class="btn btn-primary btn-lg">View Plans →</a>
-                  <button class="btn btn-outline" onclick="startFreeTrial()">🎁 Start Free Trial Now</button>
-                </div>
-              </div>
-            </div>
-          </div>`;
-        btnArea.innerHTML = `<button class="btn btn-success btn-lg" disabled style="opacity:.35;cursor:not-allowed;filter:grayscale(.5)">🔒 Publish Listing</button>`;
-      }
-    }
-
-    /* ── START FREE TRIAL ── */
-    async function startFreeTrial() {
-      if (!currentUser) {
-        toast("Please sign in first.", "err");
-        return;
-      }
-      if (!selSvc) {
-        toast("Please choose a service type first.", "err");
-        goStep(1);
-        return;
-      }
-
-      try {
-        const now = new Date();
-        const trialEnd = new Date(now);
-        trialEnd.setDate(trialEnd.getDate() + 90);
-
-        await setDoc(doc(db, "subscriptions", currentUser.uid), {
-          userId: currentUser.uid,
-          userEmail: currentUser.email || "",
-          plan: selSvc.id,
-          status: "trial_active",
-          trialStartDate: now.toISOString(),
-          trialEndDate: trialEnd.toISOString(),
-          createdAt: serverTimestamp(),
-        });
-
-        localStorage.setItem(
-          LS_KEY,
-          JSON.stringify({
-            planId: selSvc.id,
-            planName: selSvc.name + " Plan",
-            status: "trial_active",
-            trialEndDate: trialEnd.toISOString(),
-          })
-        );
-
-        toast("🎉 Free trial activated!", "ok");
-        await recheckSub();
-      } catch (err) {
-        console.error(err);
-        toast("Could not start trial: " + err.message, "err");
-      }
-    }
-
-    async function recheckSub() {
-      if (!currentUser) return;
-      $("submitArea").innerHTML = `<div class="sub-checking"><div class="spin"></div>Re-checking subscription…</div>`;
-      subStatus = await checkServiceSubscription(currentUser.uid);
-      renderSubmitArea(subStatus.hasAccess, subStatus.planName);
-      if (subStatus.hasAccess) toast("✅ Subscription confirmed!", "ok");
-      else toast("No active service subscription found.", "err");
     }
 
     /* ── BUILD SERVICE GRID ── */
@@ -536,7 +336,7 @@ export default function PostServicePage() {
         <div class="sel-check">✓</div>
         <span class="svc-icon">${s.icon}</span>
         <div class="svc-name">${s.name}</div>
-        <div class="svc-price">₹${PRICE}/mo after trial</div>`;
+        <div class="svc-price">Free listing</div>`;
       c.onclick = () => {
         selSvc = s;
         selTags = new Set();
@@ -629,13 +429,10 @@ export default function PostServicePage() {
         nameEl.textContent = user.displayName || user.email || "Signed In";
         const nameF = $("f-name");
         if (nameF && !nameF.value && user.displayName) nameF.value = user.displayName;
-        subStatus = await checkServiceSubscription(user.uid);
       } else {
         dotEl.className = "auth-dot off";
         nameEl.textContent = "Not signed in";
-        subStatus = { hasAccess: false, planName: null, source: "not-authed" };
       }
-      if (currentStep === 3) renderSubmitArea(subStatus?.hasAccess, subStatus?.planName);
     });
 
     /* ── VALIDATION ── */
@@ -720,20 +517,7 @@ export default function PostServicePage() {
       });
       $("progBar").style.width = ((n - 1) / 2) * 100 + "%";
 
-      if (n === 3) resolveSubmitArea();
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    async function resolveSubmitArea() {
-      if (subStatus && subStatus.source) {
-        renderSubmitArea(subStatus.hasAccess, subStatus.planName);
-      } else if (currentUser) {
-        $("submitArea").innerHTML = `<div class="sub-checking"><div class="spin"></div>Checking subscription…</div>`;
-        subStatus = await checkServiceSubscription(currentUser.uid);
-        renderSubmitArea(subStatus.hasAccess, subStatus.planName);
-      } else {
-        renderSubmitArea(false, null);
-      }
     }
 
     /* ── SUMMARY ── */
@@ -768,7 +552,6 @@ export default function PostServicePage() {
         ["DAYS", days],
         ["HOURS", gv("f-from") + " – " + gv("f-to")],
         ["PHOTOS", photoFiles.length ? photoFiles.length + " selected" : "None"],
-        ["PLAN", `₹${PRICE}/mo after 3-month free trial`],
       ];
       $("summaryBox").innerHTML = rows.map(([k, v]) => `<div class="summary-row"><span class="s-key">${k}</span><span class="s-val">${v}</span></div>`).join("");
     }
@@ -857,13 +640,6 @@ export default function PostServicePage() {
       const uid = currentUser?.uid;
       if (!uid) {
         toast("Please sign in first.", "err");
-        return;
-      }
-
-      const status = await checkServiceSubscription(uid);
-      if (!status.hasAccess) {
-        toast("A service subscription is required to publish.", "err");
-        renderSubmitArea(false, null);
         return;
       }
 
@@ -1072,8 +848,6 @@ export default function PostServicePage() {
     window.goStep = goStep;
     window.attemptGoStep3 = attemptGoStep3;
     window.toggleWaField = toggleWaField;
-    window.startFreeTrial = startFreeTrial;
-    window.recheckSub = recheckSub;
     window.submitListing = submitListing;
 
     /* ── INIT ── */
