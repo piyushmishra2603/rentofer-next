@@ -2,16 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { addDoc, getDoc, doc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import "./page.css";
 
 const CLOUD_NAME = "dq3hko9hn";
 const UPLOAD_PRESET = "dl6dnzau";
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-
-const LS_OWNER_KEY = "sr_owner_subscription";
-const LS_ANY_KEY = "sr_subscription";
 
 const BODY_HTML = `
 <div class="bg-scene"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
@@ -376,12 +373,9 @@ const BODY_HTML = `
 
       <div class="btn-row" id="step3BtnRow">
         <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
-        <div id="submitArea" class="submit-area">
-          <div class="sub-checking">
-            <div class="spin"></div>
-            Checking your subscription…
-          </div>
-        </div>
+        <button class="btn btn-success btn-lg" id="submitBtn" onclick="submitProperty()">
+          🚀 Upload &amp; Submit for Review
+        </button>
       </div>
 
     </div>
@@ -421,189 +415,6 @@ export default function PostCommercialPage() {
     let coverIdx = 0;
     let currentStep = 1;
 
-    /* ── SUBSCRIPTION CHECK (same Owner Plan gate as post-property) ── */
-    function _isLocalSubValid(sub) {
-      if (!sub) return false;
-      if (sub.status !== "trial_active" && sub.status !== "active") return false;
-      if (sub.trialEndDate) {
-        const exp = new Date(sub.trialEndDate);
-        if (isNaN(exp.getTime()) || exp < new Date()) return false;
-      }
-      return true;
-    }
-
-    async function checkOwnerSubscription(uid) {
-      try {
-        const raw = localStorage.getItem(LS_OWNER_KEY);
-        if (raw) {
-          const sub = JSON.parse(raw);
-          if (_isLocalSubValid(sub)) {
-            return { hasAccess: true, planName: sub.planName || "Owner Plan", source: "localStorage:owner" };
-          }
-        }
-      } catch (e) {}
-
-      try {
-        const raw = localStorage.getItem(LS_ANY_KEY);
-        if (raw) {
-          const sub = JSON.parse(raw);
-          if (sub.planId === "owner" && _isLocalSubValid(sub)) {
-            return { hasAccess: true, planName: sub.planName || "Owner Plan", source: "localStorage:generic" };
-          }
-        }
-      } catch (e) {}
-
-      try {
-        const snap = await getDoc(doc(db, "users", uid));
-        if (!snap.exists()) return { hasAccess: false, planName: null, source: "firestore:no-doc" };
-
-        const data = snap.data();
-
-        const sub = data.ownerSubscription || data.subscription || null;
-        if (sub) {
-          const isOwnerPlan =
-            sub.plan &&
-            (String(sub.plan).toLowerCase().includes("owner") ||
-              String(sub.plan).toLowerCase().includes("landlord") ||
-              String(sub.plan).toLowerCase().includes("pro"));
-          const isActive = sub.status === "active" || sub.active === true;
-          let notExpired = true;
-          if (sub.expiresAt) {
-            const exp = sub.expiresAt.toDate ? sub.expiresAt.toDate() : new Date(sub.expiresAt);
-            notExpired = exp > new Date();
-          }
-          if (isOwnerPlan && isActive && notExpired) {
-            return { hasAccess: true, planName: sub.plan || "Owner Plan", source: "firestore:sub-object" };
-          }
-        }
-
-        if (data.ownerPlan === true || data.isOwner === true || data.canPostProperty === true) {
-          return { hasAccess: true, planName: data.planName || data.subscriptionPlan || "Owner Plan", source: "firestore:flags" };
-        }
-
-        const roles = data.roles || data.role || [];
-        const roleArr = Array.isArray(roles) ? roles : [roles];
-        if (roleArr.some((r) => ["owner", "landlord", "pro", "premium"].includes(String(r).toLowerCase()))) {
-          return { hasAccess: true, planName: data.planName || "Owner Plan", source: "firestore:roles" };
-        }
-
-        return { hasAccess: false, planName: null, source: "firestore:no-match" };
-      } catch (err) {
-        console.error("Subscription check error:", err);
-        return { hasAccess: false, planName: null, source: "error", error: err.message };
-      }
-    }
-
-    function escHtml(s) {
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function renderSubChecking() {
-      const area = $("submitArea");
-      if (area)
-        area.innerHTML = `
-        <div class="sub-checking">
-          <div class="spin"></div>
-          Checking your subscription…
-        </div>`;
-    }
-
-    function renderSubmitArea(hasAccess, planName) {
-      const area = $("submitArea");
-      if (!area) return;
-
-      if (hasAccess) {
-        area.innerHTML = `
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;">
-            <div class="sub-active-badge">
-              <div class="sub-dot"></div>
-              OWNER PLAN ACTIVE
-              <span class="sub-plan-name">${escHtml(planName || "Owner")}</span>
-            </div>
-            <button class="btn btn-success btn-lg" id="submitBtn" onclick="submitProperty()">
-              🚀 Upload &amp; Submit for Review
-            </button>
-          </div>`;
-      } else {
-        area.innerHTML = `
-          <div style="width:100%;">
-            <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-              <button class="btn btn-success btn-lg btn-locked" disabled title="Owner Subscription required">
-                Upload &amp; Submit for Review
-              </button>
-            </div>
-            <div class="sub-gate">
-              <div class="sg-banner">
-                <div class="sg-banner-inner">
-                  <div class="sg-lock-circle">🔒</div>
-                  <div class="sg-banner-text">
-                    <div class="sg-banner-title">Owner Subscription Required</div>
-                    <div class="sg-banner-sub">Unlock commercial listings with an Owner plan — post unlimited properties and reach verified businesses instantly.</div>
-                  </div>
-                  <div class="sg-plan-chip">OWNER PLAN</div>
-                </div>
-              </div>
-              <div class="sg-body">
-                <div class="sg-benefits">
-                  <div class="sg-benefit">
-                    <span class="sg-benefit-icon">🏢</span>
-                    <div class="sg-benefit-text">
-                      <div class="sg-benefit-title">Post Unlimited Properties</div>
-                      <div class="sg-benefit-desc">List every commercial space you own — no caps.</div>
-                    </div>
-                  </div>
-                  <div class="sg-benefit">
-                    <span class="sg-benefit-icon">⚡</span>
-                    <div class="sg-benefit-text">
-                      <div class="sg-benefit-title">Priority Listing Boost</div>
-                      <div class="sg-benefit-desc">Your properties rank higher in search results.</div>
-                    </div>
-                  </div>
-                  <div class="sg-benefit">
-                    <span class="sg-benefit-icon">📊</span>
-                    <div class="sg-benefit-text">
-                      <div class="sg-benefit-title">Owner Analytics Dashboard</div>
-                      <div class="sg-benefit-desc">Track views, enquiries, and lead conversion.</div>
-                    </div>
-                  </div>
-                  <div class="sg-benefit">
-                    <span class="sg-benefit-icon">✅</span>
-                    <div class="sg-benefit-text">
-                      <div class="sg-benefit-title">Verified Owner Badge</div>
-                      <div class="sg-benefit-desc">Build trust with a verified checkmark on listings.</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="sg-cta-row">
-                  <div class="sg-cta-text">
-                    <div class="sg-cta-title">Get Owner Plan to start listing</div>
-                    <div class="sg-cta-sub">Already subscribed? <a href="javascript:void(0)" onclick="recheckSubscription()" style="color:var(--teal);font-weight:600;text-decoration:underline;">Refresh subscription status</a></div>
-                  </div>
-                  <div class="sg-cta-btns">
-                    <a href="/plans" class="btn btn-primary btn-lg">View Plans →</a>
-                    <a href="/plans" class="btn btn-teal">Get Owner Plan</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>`;
-      }
-    }
-
-    async function recheckSubscription() {
-      const user = window._currentUser;
-      if (!user) return;
-      renderSubChecking();
-      const { hasAccess, planName } = await checkOwnerSubscription(user.uid);
-      window._ownerSubStatus = { hasAccess, planName, checked: true };
-      renderSubmitArea(hasAccess, planName);
-      if (hasAccess) {
-        showToast("✅ Subscription confirmed! You can now submit.", "success");
-      } else {
-        showToast("No active Owner subscription found. Activate a free trial on the Plans page.", "warn");
-      }
-    }
-
     /* ── AUTH ── */
     const setFbPill = (state) => {
       const pill = $("fbPill");
@@ -629,11 +440,6 @@ export default function PostCommercialPage() {
         const nameEl = $("ownerName");
         if (emailEl && !emailEl.value && user.email) emailEl.value = user.email;
         if (nameEl && !nameEl.value && user.displayName) nameEl.value = user.displayName;
-
-        const { hasAccess, planName } = await checkOwnerSubscription(user.uid);
-        window._ownerSubStatus = { hasAccess, planName, checked: true };
-
-        if (currentStep === 3) renderSubmitArea(hasAccess, planName);
       } else {
         gate.style.display = "block";
         mainForm.style.display = "none";
@@ -643,20 +449,6 @@ export default function PostCommercialPage() {
     });
 
     /* ── STEP NAVIGATION ── */
-    async function resolveSubmitArea() {
-      const status = window._ownerSubStatus;
-      if (status && status.checked) {
-        renderSubmitArea(status.hasAccess, status.planName);
-      } else if (window._currentUser) {
-        renderSubChecking();
-        const { hasAccess, planName } = await checkOwnerSubscription(window._currentUser.uid);
-        window._ownerSubStatus = { hasAccess, planName, checked: true };
-        renderSubmitArea(hasAccess, planName);
-      } else {
-        renderSubChecking();
-      }
-    }
-
     function setStep(n) {
       currentStep = n;
       [1, 2, 3].forEach((i) => {
@@ -677,7 +469,6 @@ export default function PostCommercialPage() {
       });
       $("formProgressBar").style.width = ((n - 1) / 2) * 100 + "%";
 
-      if (n === 3) resolveSubmitArea();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -1086,13 +877,6 @@ export default function PostCommercialPage() {
         return;
       }
 
-      const { hasAccess } = await checkOwnerSubscription(user.uid);
-      if (!hasAccess) {
-        showToast("Owner Subscription required to post a property.", "error");
-        renderSubmitArea(false, null);
-        return;
-      }
-
       if (uploadedFiles.length < 1) {
         showToast("Please upload at least 1 photo before submitting.", "error");
         return;
@@ -1242,7 +1026,6 @@ export default function PostCommercialPage() {
     window.setCover = setCover;
     window.removeImg = removeImg;
     window.submitProperty = submitProperty;
-    window.recheckSubscription = recheckSubscription;
     window.showToast = showToast;
 
     return () => {
@@ -1259,7 +1042,6 @@ export default function PostCommercialPage() {
       delete window.setCover;
       delete window.removeImg;
       delete window.submitProperty;
-      delete window.recheckSubscription;
       delete window.showToast;
     };
   }, []);
