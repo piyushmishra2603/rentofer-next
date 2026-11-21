@@ -16,8 +16,6 @@
   --terra-b:  rgba(196,92,60,.22);
   --terra-g:  rgba(196,92,60,.06);
   --gold:     #c8943a;
-  --gold-lt:  #e0b060;
-  --gold-d:   rgba(200,148,58,.1);
   --gold-b:   rgba(200,148,58,.24);
   --sage:     #4a7c6f;
   --sage-d:   rgba(74,124,111,.1);
@@ -168,21 +166,6 @@
 .property-details-page .btn-wa-contact svg {flex-shrink:0}
 .property-details-page .btn-call-owner {width:100%;padding:11px;border-radius:var(--r1);background:transparent;border:1.5px solid var(--div2);color:var(--ink3);font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px}.property-details-page .btn-call-owner:hover {border-color:var(--terra-b);color:var(--terra)}
 
-.property-details-page .contact-lock-wrap {width:100%;margin-bottom:10px}
-.property-details-page .contact-lock {background:linear-gradient(135deg,rgba(200,148,58,.08),rgba(196,92,60,.06));border:1.5px solid var(--gold-b);border-radius:var(--r2);padding:16px 18px;text-align:center}
-.property-details-page .lock-icon {font-size:28px;margin-bottom:6px;display:block}
-.property-details-page .lock-title {font-family:'DM Serif Display',serif;font-size:15px;color:var(--ink);margin-bottom:4px}
-.property-details-page .lock-sub {font-size:12px;color:var(--ink4);line-height:1.65;margin-bottom:12px}
-.property-details-page .lock-badge {display:inline-flex;align-items:center;gap:5px;background:var(--gold-d);border:1px solid var(--gold-b);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--gold);font-family:'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
-.property-details-page .btn-subscribe {display:block;width:100%;padding:12px;border-radius:var(--r1);background:linear-gradient(135deg,var(--gold),#a8722a);border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;transition:all .22s;text-align:center}.property-details-page .btn-subscribe:hover {box-shadow:0 4px 18px rgba(200,148,58,.45);transform:translateY(-1px)}
-.property-details-page .btn-login-lock {display:block;width:100%;padding:9px;margin-top:7px;border-radius:var(--r1);background:transparent;border:1.5px solid var(--div2);color:var(--ink4);font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;transition:all .2s}.property-details-page .btn-login-lock:hover {border-color:var(--terra-b);color:var(--terra)}
-
-.property-details-page .trial-expired-notice {background:rgba(196,92,60,.07);border:1.5px solid var(--terra-b);border-radius:var(--r2);padding:14px 16px;text-align:center;margin-bottom:10px}
-.property-details-page .ten-icon {font-size:24px;margin-bottom:5px;display:block}
-.property-details-page .ten-title {font-family:'DM Serif Display',serif;font-size:14px;color:var(--ink);margin-bottom:4px}
-.property-details-page .ten-sub {font-size:11.5px;color:var(--ink4);line-height:1.6;margin-bottom:10px}
-.property-details-page .btn-renew {display:block;width:100%;padding:11px;border-radius:var(--r1);background:linear-gradient(135deg,var(--terra),var(--terra-dk));border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;text-align:center;transition:all .2s}.property-details-page .btn-renew:hover {box-shadow:0 4px 18px rgba(196,92,60,.4);transform:translateY(-1px)}
-
 .property-details-page .pc-perks {display:flex;flex-direction:column;gap:7px;margin-top:14px;padding-top:14px;border-top:1.5px solid var(--div)}
 .property-details-page .perk-row {display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink3)}
 .property-details-page .perk-ic {font-size:15px;flex-shrink:0}
@@ -199,10 +182,6 @@
 .property-details-page .oc-row span {font-size:15px;flex-shrink:0}
 .property-details-page .oc-wa-btn {width:100%;padding:12px;border-radius:var(--r1);background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-bottom:8px}.property-details-page .oc-wa-btn:hover {box-shadow:0 3px 14px rgba(37,211,102,.4);transform:translateY(-1px)}
 .property-details-page .oc-call-btn {width:100%;padding:10px;border-radius:var(--r1);background:var(--terra-d);border:1.5px solid var(--terra-b);color:var(--terra);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px}.property-details-page .oc-call-btn:hover {background:rgba(196,92,60,.18)}
-
-.property-details-page .oc-row-locked {display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink3)}
-.property-details-page .oc-row-locked span {font-size:15px;flex-shrink:0}
-.property-details-page .blurred-val {filter:blur(5px);user-select:none;pointer-events:none;font-weight:700;color:var(--ink);letter-spacing:.05em}
 
 .property-details-page .tenant-chips {display:flex;flex-wrap:wrap;gap:7px}
 .property-details-page .tenant-chip {display:flex;align-items:center;gap:5px;background:var(--cream2);border:1px solid var(--div2);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--ink3)}
@@ -254,7 +233,6 @@
 .property-details-page .sb-price span {font-size:11px;font-weight:400;color:var(--ink5);font-family:'JetBrains Mono',monospace;display:block;margin-top:2px}
 .property-details-page .sb-btns {display:flex;gap:8px}
 .property-details-page .sb-wa {padding:11px 16px;border-radius:var(--r1);background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px}
-.property-details-page .sb-wa-locked {padding:11px 16px;border-radius:var(--r1);background:linear-gradient(135deg,var(--gold),#a8722a);border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px}
 
 .property-details-page .rv {opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1)}.property-details-page .rv.in {opacity:1;transform:translateY(0)}.property-details-page .rv.d1 {transition-delay:.08s}.property-details-page .rv.d2 {transition-delay:.16s}.property-details-page .rv.d3 {transition-delay:.24s}
 
