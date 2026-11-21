@@ -1,0 +1,37 @@
+/* Terms & Conditions — plain-CSS equivalent of the Tailwind utilities used in terms.html,
+   so no Tailwind install is needed in the Next.js project. Fully scoped under .terms-page. */
+.terms-page { min-height: 100vh; background: #020617; color: #f1f5f9; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+.terms-page *, .terms-page *::before, .terms-page *::after { box-sizing: border-box; }
+.terms-page a { color: inherit; text-decoration: none; }
+
+.terms-page .t-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(255,255,255,.1); background: rgba(2,6,23,.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.terms-page .t-header-inner { max-width: 64rem; margin: 0 auto; padding: 1rem; display: flex; align-items: center; justify-content: space-between; }
+.terms-page .t-brand { display: flex; align-items: center; gap: .75rem; }
+.terms-page .t-logo { height: 2.5rem; width: 2.5rem; border-radius: .75rem; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; }
+.terms-page .t-brand-name { font-weight: 600; }
+.terms-page .t-brand-sub { font-size: .75rem; color: #94a3b8; }
+.terms-page .t-back { font-size: .875rem; padding: .5rem .75rem; border-radius: .75rem; border: 1px solid rgba(255,255,255,.1); transition: background .15s; }
+.terms-page .t-back:hover { background: rgba(255,255,255,.05); }
+
+.terms-page .t-main { max-width: 64rem; margin: 0 auto; padding: 2.5rem 1rem; }
+.terms-page .t-card { border-radius: 1rem; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
+.terms-page .t-title { font-size: 1.5rem; font-weight: 700; line-height: 2rem; margin: 0; }
+.terms-page .t-updated { margin: .5rem 0 0; font-size: .875rem; color: #94a3b8; }
+
+.terms-page .t-body { margin-top: 1.5rem; font-size: .875rem; color: #cbd5e1; }
+.terms-page .t-body > * + * { margin-top: 1.5rem; }
+.terms-page .t-sec > * + * { margin-top: .5rem; }
+.terms-page .t-sec h2 { margin: 0; font-size: 1.125rem; font-weight: 600; color: #f1f5f9; line-height: 1.75rem; }
+.terms-page .t-sec p { margin: 0; }
+.terms-page .t-sec ul { margin: 0; padding-left: 1.25rem; list-style: disc; }
+.terms-page .t-sec ul > li + li { margin-top: .5rem; }
+.terms-page .t-sec strong { font-weight: 600; }
+.terms-page .t-emph { color: #e2e8f0; }
+
+.terms-page .t-foot { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,.1); padding-top: 1.5rem; }
+.terms-page .t-foot p { margin: 0; font-size: .75rem; color: #94a3b8; }
+
+@media (min-width: 768px) {
+  .terms-page .t-card { padding: 2rem; }
+  .terms-page .t-title { font-size: 1.875rem; line-height: 2.25rem; }
+}
