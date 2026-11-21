@@ -1,8 +1,9 @@
-"use client";
+    "use client";
 
 import { useEffect, useRef } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import "./page.css";
 
 const PROP_TYPES = { flat: "🏡", pg: "🛏️", hostel: "🏠", coliving: "🤝", commercial: "🏢", villa: "🏰" };
@@ -48,7 +49,7 @@ const BODY_HTML = `
 <div class="pgbar" id="pgBar"></div>
 <div class="toast" id="toast"></div>
 
-<div class="wa-float" title="Chat on WhatsApp">
+<div class="wa-float" onclick="showToast('💬 Opening WhatsApp support…')" title="Chat on WhatsApp">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </div>
 
@@ -114,12 +115,12 @@ const BODY_HTML = `
     <div class="search-bar rv">
       <div class="sf">
         <span class="sf-ic">🔍</span>
-        <input type="text" id="searchQ" placeholder="Search area, locality, city, landmark…">
+        <input type="text" id="searchQ" placeholder="Search area, locality, city, landmark…" oninput="liveSearch(this.value)">
       </div>
       <div class="sf-sep"></div>
       <div class="sf" style="max-width:180px">
         <span class="sf-ic">🏙️</span>
-        <select id="searchCity">
+        <select id="searchCity" onchange="applyAllFilters()">
           <option value="">Any City</option>
           <option>Hyderabad</option><option>Bangalore</option><option>Mumbai</option>
           <option>Delhi NCR</option><option>Chennai</option><option>Pune</option>
@@ -129,7 +130,7 @@ const BODY_HTML = `
       <div class="sf-sep"></div>
       <div class="sf" style="max-width:165px">
         <span class="sf-ic">🏠</span>
-        <select id="searchType">
+        <select id="searchType" onchange="applyAllFilters()">
           <option value="">Any Type</option>
           <option value="flat">Flat / Apartment</option>
           <option value="pg">PG / Paying Guest</option>
@@ -170,7 +171,7 @@ const BODY_HTML = `
         <div class="filter-group">
           <div class="filter-label">Monthly Budget</div>
           <div class="range-row"><span>₹2,000</span><span class="range-val" id="budgetLabel">₹50,000</span></div>
-          <input type="range" class="frange" id="budgetRange" min="2000" max="200000" value="50000" step="1000" onInput="updateBudget(this.value)">
+          <input type="range" class="frange" id="budgetRange" min="2000" max="200000" value="50000" step="1000" oninput="updateBudget(this.value)">
         </div>
 
         <div class="filter-group">
@@ -234,13 +235,13 @@ const BODY_HTML = `
         <div class="mvb-t">🗺️ Looking for properties by location?</div>
         <div style="font-size:12px;color:var(--sage);margin-top:2px">Switch to map view to see all properties on a neighbourhood map.</div>
       </div>
-      <button class="mvb-btn" onclick="goToMaps()">Open Map View ↗</button>
+      <button class="mvb-btn" onclick="window.location='/maps'">Open Map View ↗</button>
     </div>
 
     <div class="sort-bar rv d1">
       <div class="sort-count"><em id="resultCount">24</em> properties found</div>
       <div class="sort-controls">
-        <select class="fsel" id="sortSel">
+        <select class="fsel" id="sortSel" onchange="applyAllFilters()">
           <option value="">Sort: Recommended</option>
           <option value="price_asc">Price: Low → High</option>
           <option value="price_desc">Price: High → Low</option>
@@ -270,12 +271,102 @@ export default function PropertiesPage() {
     const cleanupFns = [];
 
     /* ── STATE ── */
-    let allProps = STATIC_PROPS;
+    let currentProps = STATIC_PROPS;
     let activeCategory = "all";
     let currentView = "grid";
     let budgetMax = 50000;
     let savedIds = new Set();
     let compareIds = new Set();
+
+    /* ── MAP LIVE FIRESTORE DOCS → CARD SHAPE ──
+       post-property-page.js writes to the "properties" collection and
+       post-commercial-page.js writes to "commercialProperties" — neither
+       uses the same field names as the STATIC_PROPS demo shape above, so
+       live documents need to be normalized before renderCards() can use them. */
+    const RES_TYPE_MAP = {
+      apartment: "flat",
+      "independent house": "flat",
+      "builder floor": "flat",
+      studio: "flat",
+      villa: "villa",
+      "pg / hostel": "pg",
+    };
+
+    function isRecent(createdAt, days = 7) {
+      try {
+        const d = createdAt?.toDate ? createdAt.toDate() : createdAt ? new Date(createdAt) : null;
+        if (!d) return false;
+        return Date.now() - d.getTime() < days * 24 * 60 * 60 * 1000;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function mapResidentialDoc(d) {
+      const rawType = (d.type || "").toLowerCase();
+      const badges = [{ c: "pb-v", l: "✓ VERIFIED" }];
+      if (isRecent(d.createdAt)) badges.push({ c: "pb-n", l: "✨ NEW" });
+      return {
+        id: d.id,
+        type: RES_TYPE_MAP[rawType] || "flat",
+        title: d.title || "Untitled Property",
+        city: d.city || "",
+        area: d.locality || "",
+        price: Number(d.price) || 0,
+        deposit: Number(d.deposit) || 0,
+        rating: d.rating || null,
+        reviews: d.reviews || 0,
+        furnish: d.furnishing || "",
+        bhk: d.bhk || "",
+        floor: d.floor || "",
+        size: d.area || null,
+        badges,
+        amenities: Array.isArray(d.amenities) ? d.amenities : [],
+        whatsapp: d.owner?.whatsapp || d.owner?.phone || "",
+        phone: d.owner?.phone || "",
+        owner: d.owner?.name || "Owner",
+        available: d.status !== "rented",
+        isNew: isRecent(d.createdAt),
+        views: d.views || 0,
+        enq: d.enquiries || 0,
+        coverImage: d.coverImage || null,
+        images: Array.isArray(d.images) ? d.images : [],
+      };
+    }
+
+    function mapCommercialDoc(d) {
+      const badges = [];
+      if (d.verified) badges.push({ c: "pb-v", l: "✓ VERIFIED" });
+      if (d.premium) badges.push({ c: "pb-p", l: "★ PREMIUM" });
+      if (d.hot) badges.push({ c: "pb-h", l: "🔥 HOT" });
+      if (d.isNew) badges.push({ c: "pb-n", l: "✨ NEW" });
+      return {
+        id: d.id,
+        type: "commercial",
+        title: d.name || "Untitled Space",
+        city: d.city || "",
+        area: d.area || "",
+        price: Number(d.price) || 0,
+        deposit: Number(d.deposit) || 0,
+        rating: d.rating || null,
+        reviews: d.reviews || 0,
+        furnish: d.furnished ? "Furnished" : "Bare Shell",
+        bhk: d.sqft ? `${d.sqft} sqft` : "",
+        floor: d.floor || "",
+        size: d.sqft || null,
+        badges,
+        amenities: Array.isArray(d.amenities) ? d.amenities : Array.isArray(d.tags) ? d.tags : [],
+        whatsapp: d.phone || "",
+        phone: d.phone || "",
+        owner: d.ownerName || "Owner",
+        available: d.available !== false,
+        isNew: !!d.isNew,
+        views: 0,
+        enq: 0,
+        coverImage: d.coverPhoto || null,
+        images: Array.isArray(d.photos) ? d.photos : [],
+      };
+    }
 
     /* ── RENDER CARDS ── */
     function renderCards(data) {
@@ -301,6 +392,9 @@ export default function PropertiesPage() {
           )}`;
 
           const photoUrl = p.coverImage || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null);
+          const ratingLabel = p.rating ? `⭐ ${p.rating}` : "🆕 New";
+          const reviewsLabel = p.reviews ? ` <span style="opacity:.6;font-size:10px">(${p.reviews})</span>` : "";
+          const viewsLabel = typeof p.views === "number" ? (p.views >= 1000 ? (p.views / 1000).toFixed(1) + "K" : p.views) : p.views || 0;
 
           const cardImageInner = photoUrl
             ? `<img
@@ -321,8 +415,8 @@ export default function PropertiesPage() {
               <div class="pcard-badges">${(p.badges || []).map((b) => `<span class="pbdg ${b.c}">${b.l}</span>`).join("")}</div>
               <div class="pcard-save ${isSaved ? "saved" : ""}" onclick="event.stopPropagation();toggleSave(this,${p.id})" title="Save to wishlist">${isSaved ? "❤️" : "🤍"}</div>
               <div class="pcard-img-foot">
-                <div class="pif-rat">⭐ ${p.rating} <span style="opacity:.6;font-size:10px">(${p.reviews})</span></div>
-                <div class="pif-views">👁 ${p.views} views</div>
+                <div class="pif-rat">${ratingLabel}${reviewsLabel}</div>
+                <div class="pif-views">👁 ${viewsLabel} views</div>
               </div>
             </div>
 
@@ -350,14 +444,12 @@ export default function PropertiesPage() {
                   <span class="per">/ ${p.type === "commercial" ? "month (negotiable)" : "month"}</span>
                 </div>
                 <div class="pcard-actions">
-                  <button class="btn-call" title="Compare" onclick="event.stopPropagation();toggleCompare(this,${p.id},'${p.title.substring(0, 28)}…')" style="${
-            isCompare ? "background:var(--terra-d);border-color:var(--terra-b);color:var(--terra)" : ""
-          }">⊞</button>
+                  <button class="btn-call ${isCompare ? "active-compare" : ""}" title="Compare" onclick="event.stopPropagation();toggleCompare(this,${p.id},'${p.title.substring(0, 28)}…')" style="${isCompare ? "background:var(--terra-d);border-color:var(--terra-b);color:var(--terra)" : ""}">⊞</button>
                   <a class="btn-wa" href="${waLink}" target="_blank" rel="noopener" onclick="event.stopPropagation();trackWA(${p.id})">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     WhatsApp
                   </a>
-                  <a class="btn-view" href="/property-details?id=${p.id}&type=${p.type}" onclick="event.stopPropagation()">View →</a>
+                  <a class="btn-view" href="/property-detail?id=${p.id}&type=${p.type}" onclick="event.stopPropagation()">View →</a>
                 </div>
               </div>
             </div>
@@ -375,7 +467,7 @@ export default function PropertiesPage() {
     }
 
     function applyAllFilters() {
-      let data = [...allProps];
+      let data = [...currentProps];
       const q = $("searchQ").value.trim().toLowerCase();
       const city = $("searchCity").value;
       const type = $("searchType").value;
@@ -497,7 +589,7 @@ export default function PropertiesPage() {
       slots.forEach((slotId, i) => {
         const el = $(slotId);
         if (ids[i] !== undefined) {
-          const p = allProps.find((x) => x.id === ids[i]);
+          const p = currentProps.find((x) => x.id === ids[i]);
           el.className = "cb-slot filled";
           el.textContent = p ? p.title.substring(0, 22) + "…" : "";
         } else {
@@ -513,7 +605,9 @@ export default function PropertiesPage() {
     }
     function clearCompare() {
       compareIds.clear();
-      rootRef.current.querySelectorAll(".btn-call").forEach((b) => (b.style.cssText = ""));
+      rootRef.current.querySelectorAll(".btn-call").forEach((b) => {
+        b.style.cssText = "";
+      });
       updateCompareBar();
     }
 
@@ -523,10 +617,6 @@ export default function PropertiesPage() {
 
     function goToDetail(id) {
       window.location = "/property-detail?id=" + id;
-    }
-
-    function goToMaps() {
-      window.location = "/maps";
     }
 
     /* ── STAT COUNTERS ── */
@@ -554,14 +644,12 @@ export default function PropertiesPage() {
       }, delay);
     }
 
-    /* ── NAVBAR & SCROLL PROGRESS ── */
+    /* ── NAVBAR & SCROLL ── */
     const onScroll = () => {
-      const nb = $("navbar");
-      if (nb) nb.classList.toggle("solid", window.scrollY > 40);
+      $("navbar").classList.toggle("solid", window.scrollY > 40);
       const t = document.documentElement;
       const pct = (window.scrollY / (t.scrollHeight - window.innerHeight)) * 100;
-      const pg = $("pgBar");
-      if (pg) pg.style.width = Math.min(pct, 100) + "%";
+      $("pgBar").style.width = Math.min(pct, 100) + "%";
     };
     window.addEventListener("scroll", onScroll);
     cleanupFns.push(() => window.removeEventListener("scroll", onScroll));
@@ -578,7 +666,6 @@ export default function PropertiesPage() {
     let toastTimer;
     function toast(msg) {
       const el = $("toast");
-      if (!el) return;
       el.innerHTML = msg;
       el.style.display = "block";
       clearTimeout(toastTimer);
@@ -586,20 +673,6 @@ export default function PropertiesPage() {
         el.style.display = "none";
       }, 3500);
     }
-
-    /* ── SEARCH INPUT LISTENER (oninput was inline in original; wire it here) ── */
-    const searchQEl = $("searchQ");
-    const onSearchInput = () => liveSearch();
-    if (searchQEl) searchQEl.addEventListener("input", onSearchInput);
-    const searchCityEl = $("searchCity");
-    const searchTypeEl = $("searchType");
-    const sortSelEl = $("sortSel");
-    const onChangeFilter = () => applyAllFilters();
-    [searchCityEl, searchTypeEl, sortSelEl].forEach((el) => el && el.addEventListener("change", onChangeFilter));
-    cleanupFns.push(() => {
-      searchQEl && searchQEl.removeEventListener("input", onSearchInput);
-      [searchCityEl, searchTypeEl, sortSelEl].forEach((el) => el && el.removeEventListener("change", onChangeFilter));
-    });
 
     /* ── SCROLL REVEAL ── */
     const obs = new IntersectionObserver(
@@ -616,7 +689,7 @@ export default function PropertiesPage() {
     rootRef.current.querySelectorAll(".rv").forEach((el) => obs.observe(el));
     cleanupFns.push(() => obs.disconnect());
 
-    /* ── EXPOSE HANDLERS GLOBALLY (needed for onclick="..." attributes, including ones injected via renderCards' innerHTML) ── */
+    /* ── EXPOSE HANDLERS GLOBALLY (needed for onclick="..." attributes, including inside dynamically-rendered cards) ── */
     window.setCat = setCat;
     window.applyAllFilters = applyAllFilters;
     window.liveSearch = liveSearch;
@@ -631,32 +704,43 @@ export default function PropertiesPage() {
     window.clearCompare = clearCompare;
     window.trackWA = trackWA;
     window.goToDetail = goToDetail;
-    window.goToMaps = goToMaps;
+    window.showToast = toast;
     window.toggleMob = toggleMob;
 
-    /* ── INIT: render static data immediately, then try to replace with live Firestore data ── */
-    renderCards(allProps);
-    updateCounts(allProps.length);
+    /* ── INIT: render static data immediately, then try live Firestore data ── */
+    renderCards(currentProps);
+    updateCounts(currentProps.length);
     updateBudget(50000);
 
+    let cancelled = false;
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, "properties"), where("approved", "==", true), limit(24)));
-        if (!snap.empty) {
-          const rows = [];
-          snap.forEach((d) => rows.push({ id: d.id, ...d.data(), fromDB: true }));
-          if (rows.length) {
-            allProps = rows;
-            renderCards(allProps);
-            updateCounts(rows.length);
-          }
+        const [resSnap, comSnap] = await Promise.all([
+          getDocs(query(collection(db, "properties"), where("approved", "==", true), limit(24))),
+          getDocs(query(collection(db, "commercialProperties"), limit(12))).catch(() => ({ forEach: () => {} })),
+        ]);
+
+        const rows = [];
+        resSnap.forEach((docSnap) => rows.push(mapResidentialDoc({ id: docSnap.id, ...docSnap.data() })));
+        comSnap.forEach((docSnap) => rows.push(mapCommercialDoc({ id: docSnap.id, ...docSnap.data() })));
+
+        if (rows.length && !cancelled) {
+          currentProps = rows;
+          renderCards(currentProps);
+          updateCounts(rows.length);
         }
       } catch (e) {
-        console.log("Using static data");
+        console.log("Using static data —", e.message);
       }
     })();
 
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
+      if (u) console.log("User:", u.email);
+    });
+
     return () => {
+      cancelled = true;
+      unsubAuth();
       cleanupFns.forEach((fn) => fn());
       delete window.setCat;
       delete window.applyAllFilters;
@@ -672,10 +756,10 @@ export default function PropertiesPage() {
       delete window.clearCompare;
       delete window.trackWA;
       delete window.goToDetail;
-      delete window.goToMaps;
+      delete window.showToast;
       delete window.toggleMob;
     };
   }, []);
 
   return <div className="properties-page" ref={rootRef} dangerouslySetInnerHTML={{ __html: BODY_HTML }} />;
-}
+}    
