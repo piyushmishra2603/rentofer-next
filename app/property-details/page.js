@@ -7,8 +7,6 @@ import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "@/lib/firebase";
 import "./page.css";
 
-const LS_KEY = "sr_subscription"; // must match /plans
-
 const BODY_HTML = `
 <div class="pgbar" id="pgBar"></div>
 <div class="toast" id="toast"></div>
@@ -314,36 +312,6 @@ function PropertyDetailsInner() {
       b.textContent = open ? "✕" : "☰";
     }
 
-    /* ── subscription check ── */
-    function getLocalSubscription() {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch { return null; }
-    }
-    function getLocalSubscriptionState() {
-      const sub = getLocalSubscription();
-      if (!sub) return "none";
-      const isKnownStatus = sub.status === "trial_active" || sub.status === "active";
-      if (!isKnownStatus) return "none";
-      if (sub.trialEndDate && Date.now() > new Date(sub.trialEndDate).getTime()) return "expired";
-      return "active";
-    }
-    async function checkFirebaseSubscription(uid) {
-      if (!uid) return false;
-      try {
-        const snap = await getDoc(doc(db, "users", uid));
-        if (!snap.exists()) return false;
-        const data = snap.data();
-        const isActive = data.subscriptionStatus === "active";
-        const isTenantPlan = (data.subscriptionPlan || "").startsWith("tenant");
-        return isActive && isTenantPlan;
-      } catch (e) {
-        console.error("Firebase subscription check failed:", e);
-        return false;
-      }
-    }
-
     function buildWaNum(raw) {
       if (!raw) return null;
       let digits = String(raw).replace(/\D/g, "");
@@ -437,7 +405,33 @@ function PropertyDetailsInner() {
       $("notFound").style.display = "block";
     }
 
-    function renderProperty(p, hasSubscription, trialExpired, isLoggedIn) {
+    /* ── normalize a commercialProperties doc into the same shape renderProperty() expects ── */
+    function mapCommercialDoc(d) {
+      return {
+        id: d.id,
+        type: "Commercial",
+        title: d.name || "Untitled Space",
+        city: d.city || "",
+        locality: d.area || "",
+        price: d.price || 0,
+        deposit: d.deposit || 0,
+        bhk: d.sqft ? `${d.sqft} sqft` : "",
+        area: d.sqft || null,
+        floor: d.floor || "",
+        furnishing: d.furnished ? "Furnished" : "Bare Shell",
+        description: d.description || "",
+        amenities: Array.isArray(d.amenities) ? d.amenities : Array.isArray(d.tags) ? d.tags : [],
+        images: Array.isArray(d.photos) ? d.photos : d.coverPhoto ? [d.coverPhoto] : [],
+        owner: { name: d.ownerName || "Owner", phone: d.phone || "", whatsapp: d.phone || "", email: "" },
+        approved: d.verified !== false,
+        status: d.available !== false ? "active" : "leased",
+        views: d.views || 0,
+        enquiries: d.reviews || 0,
+        createdAt: d.createdAt || null,
+      };
+    }
+
+    function renderProperty(p) {
       const ls = $("loadingScreen");
       ls.classList.add("hide");
       setTimeout(() => { ls.style.display = "none"; }, 400);
@@ -561,6 +555,7 @@ function PropertyDetailsInner() {
         $("sideDeposit").textContent = "₹" + Number(p.deposit).toLocaleString("en-IN");
       }
 
+      /* ── owner contact: always shown, no subscription/paywall gate ── */
       const owner = p.owner || {};
       const ownerName = owner.name || p.ownerName || "Property Owner";
       const ownerPhone = owner.phone || p.ownerPhone || "";
@@ -581,71 +576,35 @@ function PropertyDetailsInner() {
       const callHref = ownerPhone ? `tel:${ownerPhone.replace(/\s/g, "")}` : "#";
       const waSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
 
-      if (hasSubscription) {
-        const detailHtml = [];
-        if (ownerPhone) detailHtml.push(`<div class="oc-row"><span>📞</span>${ownerPhone}</div>`);
-        if (ownerWA && ownerWA !== ownerPhone) detailHtml.push(`<div class="oc-row"><span>💬</span>${ownerWA} (WhatsApp)</div>`);
-        if (ownerEmail) detailHtml.push(`<div class="oc-row"><span>📧</span>${ownerEmail}</div>`);
-        $("ownerDetail").innerHTML = detailHtml.join("");
+      const detailHtml = [];
+      if (ownerPhone) detailHtml.push(`<div class="oc-row"><span>📞</span>${ownerPhone}</div>`);
+      if (ownerWA && ownerWA !== ownerPhone) detailHtml.push(`<div class="oc-row"><span>💬</span>${ownerWA} (WhatsApp)</div>`);
+      if (ownerEmail) detailHtml.push(`<div class="oc-row"><span>📧</span>${ownerEmail}</div>`);
+      $("ownerDetail").innerHTML = detailHtml.join("");
 
-        const cbWrap = $("contactButtonsWrap");
-        cbWrap.innerHTML = "";
-        if (waNum) {
-          const waBtn = document.createElement("a");
-          waBtn.className = "btn-wa-contact";
-          waBtn.href = waHref; waBtn.target = "_blank"; waBtn.rel = "noopener";
-          waBtn.innerHTML = `${waSvg} Contact Owner on WhatsApp`;
-          cbWrap.appendChild(waBtn);
-        }
-        if (ownerPhone) {
-          const callBtn = document.createElement("a");
-          callBtn.className = "btn-call-owner";
-          callBtn.href = callHref;
-          callBtn.textContent = "📞 Call Owner";
-          cbWrap.appendChild(callBtn);
-        }
-
-        const ocBtns = $("ownerContactBtns");
-        ocBtns.innerHTML = "";
-        if (waNum) ocBtns.innerHTML += `<a class="oc-wa-btn" href="${waHref}" target="_blank" rel="noopener">${waSvg} WhatsApp Owner</a>`;
-        if (ownerPhone) ocBtns.innerHTML += `<a class="oc-call-btn" href="${callHref}">📞 Call Owner</a>`;
-
-        $("sbContactBtn").innerHTML = waNum ? `<a class="sb-wa" href="${waHref}" target="_blank" rel="noopener">${waSvg} Contact Owner</a>` : "";
-      } else if (trialExpired) {
-        const lockedDetailHtml = [];
-        if (ownerPhone) lockedDetailHtml.push('<div class="oc-row-locked"><span>📞</span><span class="blurred-val">+91 98765 43210</span></div>');
-        if (ownerEmail) lockedDetailHtml.push('<div class="oc-row-locked"><span>📧</span><span class="blurred-val">owner@email.com</span></div>');
-        $("ownerDetail").innerHTML = lockedDetailHtml.join("");
-
-        const expiredHTML = `
-          <div class="trial-expired-notice">
-            <span class="ten-icon">⏰</span>
-            <div class="ten-title">Your Free Trial Ended</div>
-            <div class="ten-sub">Your 3-month free trial has expired. Subscribe to continue accessing owner contact details.</div>
-            <a class="btn-renew" href="/plans">Subscribe to Continue →</a>
-          </div>`;
-        $("contactButtonsWrap").innerHTML = expiredHTML;
-        $("ownerContactBtns").innerHTML = expiredHTML;
-        $("sbContactBtn").innerHTML = `<a class="sb-wa-locked" href="/plans">🔒 Renew Access</a>`;
-      } else {
-        const lockedDetailHtml = [];
-        if (ownerPhone) lockedDetailHtml.push('<div class="oc-row-locked"><span>📞</span><span class="blurred-val">+91 98765 43210</span></div>');
-        if (ownerEmail) lockedDetailHtml.push('<div class="oc-row-locked"><span>📧</span><span class="blurred-val">owner@email.com</span></div>');
-        $("ownerDetail").innerHTML = lockedDetailHtml.join("");
-
-        const lockHTML = `
-          <div class="contact-lock">
-            <span class="lock-icon">🔒</span>
-            <div class="lock-title">Contact Info Locked</div>
-            <div class="lock-sub">Get direct access to the owner's WhatsApp &amp; phone number — no agents, no brokerage.</div>
-            <div class="lock-badge">✨ Free Trial Available</div>
-            <a class="btn-subscribe" href="/plans">Start Free Trial — Unlock Now</a>
-            ${!isLoggedIn ? `<a class="btn-login-lock" href="/login?redirect=${encodeURIComponent(window.location.href)}">Already subscribed? Sign In</a>` : ""}
-          </div>`;
-        $("contactButtonsWrap").innerHTML = lockHTML;
-        $("ownerContactBtns").innerHTML = lockHTML;
-        $("sbContactBtn").innerHTML = `<a class="sb-wa-locked" href="/plans">🔒 Unlock Contact</a>`;
+      const cbWrap = $("contactButtonsWrap");
+      cbWrap.innerHTML = "";
+      if (waNum) {
+        const waBtn = document.createElement("a");
+        waBtn.className = "btn-wa-contact";
+        waBtn.href = waHref; waBtn.target = "_blank"; waBtn.rel = "noopener";
+        waBtn.innerHTML = `${waSvg} Contact Owner on WhatsApp`;
+        cbWrap.appendChild(waBtn);
       }
+      if (ownerPhone) {
+        const callBtn = document.createElement("a");
+        callBtn.className = "btn-call-owner";
+        callBtn.href = callHref;
+        callBtn.textContent = "📞 Call Owner";
+        cbWrap.appendChild(callBtn);
+      }
+
+      const ocBtns = $("ownerContactBtns");
+      ocBtns.innerHTML = "";
+      if (waNum) ocBtns.innerHTML += `<a class="oc-wa-btn" href="${waHref}" target="_blank" rel="noopener">${waSvg} WhatsApp Owner</a>`;
+      if (ownerPhone) ocBtns.innerHTML += `<a class="oc-call-btn" href="${callHref}">📞 Call Owner</a>`;
+
+      $("sbContactBtn").innerHTML = waNum ? `<a class="sb-wa" href="${waHref}" target="_blank" rel="noopener">${waSvg} Contact Owner</a>` : "";
 
       renderGallery(p);
       initScrollReveal();
@@ -686,40 +645,37 @@ function PropertyDetailsInner() {
     window.addEventListener("scroll", onNavScroll);
     const checkShareBar = setupShareBar();
 
-    /* ── boot: auth + property fetch + subscription check ── */
+    /* ── boot: auth (for display only) + property fetch ──
+       The id in the URL can belong to either the "properties" collection
+       (post-property-page.js) or the "commercialProperties" collection
+       (post-commercial-page.js). properties-page.js's card links always
+       append &type=..., so that tells us which collection to read. */
     let unsubAuth = () => {};
     (async () => {
       const urlId = searchParams.get("id");
       if (!urlId) { showNotFound(); return; }
 
+      const urlType = (searchParams.get("type") || "").toLowerCase();
+      const isCommercial = urlType === "commercial";
+      const collectionName = isCommercial ? "commercialProperties" : "properties";
+
       try {
         const userPromise = new Promise((resolve) => {
           unsubAuth = onAuthStateChanged(auth, (u) => resolve(u), () => resolve(null));
         });
-        const [userResult, propSnap] = await Promise.all([userPromise, getDoc(doc(db, "properties", urlId))]);
+        const [userResult, propSnap] = await Promise.all([userPromise, getDoc(doc(db, collectionName, urlId))]);
 
         window._currentUser = userResult || null;
 
         if (!propSnap.exists()) { showNotFound(); return; }
 
-        const data = { id: propSnap.id, ...propSnap.data() };
+        const rawData = { id: propSnap.id, ...propSnap.data() };
+        const data = isCommercial ? mapCommercialDoc(rawData) : rawData;
         window._propData = data;
 
-        try { await updateDoc(doc(db, "properties", urlId), { views: increment(1) }); } catch {}
+        try { await updateDoc(doc(db, collectionName, urlId), { views: increment(1) }); } catch {}
 
-        const localState = getLocalSubscriptionState();
-        let hasSubscription = false;
-        let trialExpired = false;
-
-        if (localState === "active") {
-          hasSubscription = true;
-        } else if (localState === "expired") {
-          trialExpired = true;
-        } else {
-          hasSubscription = await checkFirebaseSubscription(window._currentUser?.uid);
-        }
-
-        renderProperty(data, hasSubscription, trialExpired, !!window._currentUser);
+        renderProperty(data);
       } catch (err) {
         console.error("Error loading property:", err);
         showNotFound();
