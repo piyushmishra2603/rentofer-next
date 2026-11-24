@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   SmartRent AI — Home page styles
+   Rentofer — Home page styles
    Ported 1:1 from the original index.html <style> block.
    Loaded only on the "/" route (Next.js code-splits CSS
    imported inside a page component), so these --tokens
