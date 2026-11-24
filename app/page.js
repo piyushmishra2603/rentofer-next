@@ -66,11 +66,11 @@ const SOON_MSG = "🔒 Home services are coming soon — stay tuned!";
 const LOCKED = { opacity: 0.55, cursor: "not-allowed" };
 
 const FAQS = [
-  { q: "Is SmartRent really free for tenants?", a: "Yes. Browsing, searching and directly contacting property owners is completely free for tenants — there is no brokerage fee at any stage." },
+  { q: "Is Rentofer really free for tenants?", a: "Yes. Browsing, searching and directly contacting property owners is completely free for tenants — there is no brokerage fee at any stage." },
   { q: "How are properties verified?", a: "Every listing goes through KYC document checks and a physical ground-team visit before it goes live, so photos and pricing match reality." },
   { q: "How quickly can I list my property?", a: "Most owners go live in under 30 minutes — add your photos, set your price, and verified tenant inquiries start coming in the same day." },
   { q: "Do you offer home services outside rentals?", a: "Not yet — plumbers, electricians, carpenters, painters, movers and cleaners are coming soon. Stay tuned!" },
-  { q: "Which cities does SmartRent cover?", a: "We currently cover 15+ Indian cities including Hyderabad, Bangalore, Mumbai, Delhi/NCR and Chennai, with more being added regularly." },
+  { q: "Which cities does Rentofer cover?", a: "We currently cover 15+ Indian cities including Hyderabad, Bangalore, Mumbai, Delhi/NCR and Chennai, with more being added regularly." },
 ];
 
 const BLOG_POSTS = [
@@ -314,7 +314,7 @@ export default function HomePage() {
           <div className="nav-gem">💎</div>
           <div className="nav-wordmark">
             <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-              <span className="nw-sr">SmartRent</span>
+              <span className="nw-sr">Rentofer</span>
               
             </div>
           </div>
