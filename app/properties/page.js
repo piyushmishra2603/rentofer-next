@@ -79,7 +79,7 @@ const BODY_HTML = `
 <nav class="nav" id="navbar">
   <a href="/" class="brand">
     <div class="bgem">💎</div>
-    <span class="bname">Rentofer<span class="bai">AI</span></span>
+    <span class="bname">Rentofer<span class="bai"></span></span>
   </a>
   <div class="nav-links">
     <a class="nl" href="/">Home</a>
