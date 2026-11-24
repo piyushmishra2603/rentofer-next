@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "SmartRent AI",
-  description: "SmartRent AI — rental & home services platform",
+  title: "Rentofer",
+  description: "Rentofer — rental & home services platform",
 };
 
 export default function RootLayout({ children }) {
