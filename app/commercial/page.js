@@ -5,125 +5,108 @@ import { collection, getDocs, limit, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import "./page.css";
 
-const BODY_HTML = `
-<!-- Background layers -->
-<div class="bg-dots"></div>
-<div class="bg-orb o1"></div>
-<div class="bg-orb o2"></div>
+const FONTS_HREF =
+  "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap";
 
-<!-- Toast -->
+const TYPE_EMOJI = { Office: "🖥️", Retail: "🏪", Coworking: "💻", Warehouse: "🏭", Industrial: "⚙️", Showroom: "🚗" };
+const TYPE_LABEL = { Office: "Office", Retail: "Retail", Coworking: "Co-working", Warehouse: "Warehouse", Industrial: "Industrial", Showroom: "Showroom" };
+const TYPES = Object.keys(TYPE_LABEL);
+const TYPE_BG = "linear-gradient(145deg,#e4e0d8,#ccc4b8)";
+
+const BUDGET_MIN = 10000;
+const BUDGET_MAX = 1000000;
+
+const IDEAL_KEYS = {
+  corp: /corporate|mnc/i, startup: /startup/i, retail: /retail/i, mfg: /manufactur/i,
+  logi: /logistic|3pl/i, it: /\bit\b|ites/i, fnb: /f&b|restaurant|f&amp;b/i,
+};
+const AMEN_KEYS = {
+  parking: /parking/i, power: /power/i, ac: /\bac\b|air cond/i, fibre: /fibre|fiber|internet|wifi/i,
+  security: /security/i, lift: /lift|elevator/i, cafe: /cafeteria|pantry/i, cctv: /cctv/i,
+};
+
+const BODY_HTML = `
+<div class="bg-texture"></div>
+<div class="pgbar" id="pgBar"></div>
 <div class="toast" id="toast"></div>
 
-<!-- Mobile drawer -->
-<aside class="mob-drawer" id="mobDrawer">
-  <a class="mob-l" href="/">🏠 Home</a>
-  <a class="mob-l" href="/pgs-hostels">🛏️ PG &amp; Hostels</a>
-  <a class="mob-l" href="/properties">🏡 Flats</a>
-  <a class="mob-l" href="/properties">🤝 Co-living</a>
-  <a class="mob-l" href="/commercial" style="color:var(--gold)">🏢 Commercial</a>
-  <a class="mob-l" href="/owner-dashboard">📋 Dashboard</a>
-  <hr style="border:none;border-top:1px solid var(--div);margin:6px 0">
-  <a class="btn btn-ghost" href="/login" style="width:100%;justify-content:center;margin-top:6px">Sign In</a>
-  <a class="btn btn-gold" href="/post-commercial" style="width:100%;justify-content:center;margin-top:6px">+ List Commercial</a>
-</aside>
+<div class="compare-bar" id="compareBar">
+  <div style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--ink);flex-shrink:0">Compare</div>
+  <div class="cb-slots" id="compareSlots">
+    <div class="cb-slot" id="cs1">+ Add property</div>
+    <div class="cb-slot" id="cs2">+ Add property</div>
+    <div class="cb-slot" id="cs3">+ Add property</div>
+  </div>
+  <button class="cb-compare-btn" onclick="doCompare()">Compare Now →</button>
+  <button class="cb-close" onclick="clearCompare()">✕ Clear</button>
+</div>
 
-<!-- Navbar -->
+<div class="mob-drawer" id="mobDrawer">
+  <a class="mob-l" href="/">🏠 Home</a>
+  <a class="mob-l" href="/properties">🏘️ All Properties</a>
+  <a class="mob-l" href="/pgs-hostels">🛏 PG &amp; Hostels</a>
+  <a class="mob-l" href="/commercial" style="color:var(--terra)">🏢 Commercial</a>
+  <a class="mob-l" href="#" style="opacity:.55;cursor:not-allowed" onclick="event.preventDefault();showToast('🔒 Home services are coming soon — stay tuned!')">🔧 Services · Stay tuned</a>
+  <hr style="border:none;border-top:1.5px solid var(--div);margin:8px 0">
+  <a class="nb nb-out" href="/login" style="text-decoration:none;justify-content:center">Sign In</a>
+  <a class="nb nb-terra" href="/post-commercial" style="text-decoration:none;justify-content:center;margin-top:8px">+ List Commercial</a>
+</div>
+
 <nav class="nav" id="navbar">
   <a href="/" class="brand">
-    <div class="brand-gem">💎</div>
-    <span class="brand-name">SmartRent</span>
+    <div class="bgem">💎</div>
+    <span class="bname">SmartRent</span>
   </a>
   <div class="nav-links">
     <a class="nl" href="/">Home</a>
+    <a class="nl" href="/properties">All Properties</a>
     <a class="nl" href="/pgs-hostels">PG &amp; Hostels</a>
-    <a class="nl" href="/properties">Flats</a>
-    <a class="nl" href="/properties">Co-living</a>
-    <a class="nl on" href="/commercial">Commercial <span class="hot">HOT</span></a>
+    <a class="nl on" href="/commercial">Commercial</a>
+    <a class="nl" href="#" style="opacity:.55;cursor:not-allowed" onclick="event.preventDefault();showToast('🔒 Home services are coming soon — stay tuned!')">Services · Soon</a>
+    <a class="nl" href="/about-us">About</a>
   </div>
   <div class="nav-r">
-    <a class="btn btn-ghost" href="/login">Sign In</a>
-    <a class="btn btn-gold" href="/post-commercial">+ List Commercial</a>
-    <button class="mob-btn" id="mobBtn">☰</button>
+    <a class="nb nb-out" href="/login" style="text-decoration:none">Sign In</a>
+    <a class="nb nb-terra" href="/post-commercial" style="text-decoration:none">+ List Commercial</a>
+    <button class="mob-btn" onclick="toggleMob()" id="mobBtn">☰</button>
   </div>
 </nav>
 
-<!-- Hero -->
-<header class="hero">
-  <!-- Decorative rings -->
-  <div class="hero-rings">
-    <div class="ring r1"></div>
-    <div class="ring r2"></div>
-    <div class="ring r3"></div>
-  </div>
+<div class="page-hero">
+  <div class="ph-inner">
+    <div class="ph-top">
+      <div class="ph-left">
+        <div class="ph-eyebrow">Verified Listings · India</div>
+        <h1 class="ph-title">Find Your<br><em>Perfect Workspace</em></h1>
+        <p class="ph-sub">Offices · Retail · Co-working · Warehouses · Industrial · Showrooms — all in one place. Zero brokerage.</p>
+      </div>
+      <div class="ph-stats-row">
+        <div class="phs"><div class="phs-v" id="stat-listings">0</div><div class="phs-l">Live Listings</div></div>
+        <div class="phs"><div class="phs-v">₹0</div><div class="phs-l">Brokerage</div></div>
+        <div class="phs"><div class="phs-v" id="stat-cities">0</div><div class="phs-l">Cities</div></div>
+        <div class="phs"><div class="phs-v" id="stat-owners">0</div><div class="phs-l">Verified Owners</div></div>
+      </div>
+    </div>
 
-  <!-- Building skyline silhouette -->
-  <svg class="skyline-art" viewBox="0 0 1400 220" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-    <rect x="60" y="140" width="40" height="80" fill="#8a5010"/>
-    <rect x="70" y="118" width="20" height="22" fill="#8a5010"/>
-    <rect x="120" y="100" width="60" height="120" fill="#8a5010"/>
-    <rect x="135" y="76" width="30" height="24" fill="#8a5010"/>
-    <rect x="200" y="130" width="30" height="90" fill="#8a5010"/>
-    <rect x="250" y="84" width="50" height="136" fill="#8a5010"/>
-    <rect x="260" y="60" width="30" height="24" fill="#8a5010"/>
-    <rect x="320" y="118" width="40" height="102" fill="#8a5010"/>
-    <rect x="380" y="64" width="70" height="156" fill="#8a5010"/>
-    <rect x="390" y="42" width="50" height="22" fill="#8a5010"/>
-    <rect x="415" y="24" width="8" height="18" fill="#8a5010"/>
-    <rect x="470" y="124" width="35" height="96" fill="#8a5010"/>
-    <rect x="520" y="90" width="55" height="130" fill="#8a5010"/>
-    <rect x="530" y="66" width="35" height="24" fill="#8a5010"/>
-    <rect x="595" y="108" width="40" height="112" fill="#8a5010"/>
-    <rect x="650" y="72" width="65" height="148" fill="#8a5010"/>
-    <rect x="660" y="50" width="45" height="22" fill="#8a5010"/>
-    <rect x="730" y="134" width="35" height="86" fill="#8a5010"/>
-    <rect x="780" y="98" width="50" height="122" fill="#8a5010"/>
-    <rect x="790" y="74" width="30" height="24" fill="#8a5010"/>
-    <rect x="845" y="122" width="40" height="98" fill="#8a5010"/>
-    <rect x="900" y="82" width="60" height="138" fill="#8a5010"/>
-    <rect x="910" y="58" width="40" height="24" fill="#8a5010"/>
-    <rect x="975" y="116" width="45" height="104" fill="#8a5010"/>
-    <rect x="1035" y="94" width="55" height="126" fill="#8a5010"/>
-    <rect x="1045" y="70" width="35" height="24" fill="#8a5010"/>
-    <rect x="1105" y="128" width="38" height="92" fill="#8a5010"/>
-    <rect x="1160" y="76" width="62" height="144" fill="#8a5010"/>
-    <rect x="1170" y="54" width="42" height="22" fill="#8a5010"/>
-    <rect x="1238" y="138" width="35" height="82" fill="#8a5010"/>
-    <rect x="1285" y="104" width="50" height="116" fill="#8a5010"/>
-    <rect x="1350" y="144" width="40" height="76" fill="#8a5010"/>
-  </svg>
-
-  <p class="hero-eyebrow">
-    <span class="live-dot"></span>
-    Commercial Real Estate · Rent Verified Spaces
-  </p>
-  <h1 class="hero-h1">Rent Premium<br><em>Commercial</em> Space</h1>
-  <p class="hero-sub">Where your business belongs.</p>
-  <p class="hero-desc">
-    Discover verified office spaces, retail shops, warehouses, co-working hubs &amp;
-    industrial units across India's prime business districts.
-    Zero brokerage. Transparent leases. Instant owner connects.
-  </p>
-
-  <!-- Search bar -->
-  <div class="search-wrap">
-    <div class="search-box">
+    <div class="search-bar rv">
       <div class="sf">
         <span class="sf-ic">🔍</span>
-        <input type="search" id="sQ" placeholder="Area, business park, city…" autocomplete="off" />
+        <input type="text" id="searchQ" placeholder="Search area, business park, city…" oninput="liveSearch(this.value)">
       </div>
-      <div class="s-sep"></div>
-      <div class="sf" style="max-width:175px">
+      <div class="sf-sep"></div>
+      <div class="sf" style="max-width:180px">
         <span class="sf-ic">🏙️</span>
-        <select id="sCity">
+        <select id="searchCity" onchange="applyAllFilters()">
           <option value="">Any City</option>
           <option>Hyderabad</option><option>Bangalore</option><option>Mumbai</option>
           <option>Delhi NCR</option><option>Chennai</option><option>Pune</option>
+          <option>Kolkata</option><option>Noida</option><option>Ahmedabad</option>
         </select>
       </div>
-      <div class="s-sep"></div>
-      <div class="sf" style="max-width:162px">
+      <div class="sf-sep"></div>
+      <div class="sf" style="max-width:165px">
         <span class="sf-ic">🏢</span>
-        <select id="sType">
+        <select id="searchType" onchange="applyAllFilters()">
           <option value="">Any Type</option>
           <option value="Office">Office Space</option>
           <option value="Retail">Retail / Shop</option>
@@ -133,215 +116,139 @@ const BODY_HTML = `
           <option value="Showroom">Showroom</option>
         </select>
       </div>
-      <button class="search-go" onclick="doSearch()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        Find Space
+      <button class="search-go" onclick="applyAllFilters()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Search
       </button>
     </div>
 
-    <div class="type-pills">
-      <button class="tpill on" onclick="setPill(this,'all')">🏢 All</button>
-      <button class="tpill" onclick="setPill(this,'Office')">🖥️ Office</button>
-      <button class="tpill" onclick="setPill(this,'Retail')">🏪 Retail</button>
-      <button class="tpill" onclick="setPill(this,'Coworking')">💻 Co-working</button>
-      <button class="tpill" onclick="setPill(this,'Warehouse')">🏭 Warehouse</button>
-      <button class="tpill" onclick="setPill(this,'Industrial')">⚙️ Industrial</button>
-      <button class="tpill" onclick="setPill(this,'Showroom')">🚗 Showroom</button>
+    <div class="cat-tabs rv d1" id="catTabs">
+      <button class="cat-tab on" data-cat="all" onclick="setCat(this,'all')">🏢 All <span class="ct-count" id="cnt-all">0</span></button>
+      <button class="cat-tab" data-cat="Office" onclick="setCat(this,'Office')">🖥️ Office <span class="ct-count" id="cnt-Office">0</span></button>
+      <button class="cat-tab" data-cat="Retail" onclick="setCat(this,'Retail')">🏪 Retail <span class="ct-count" id="cnt-Retail">0</span></button>
+      <button class="cat-tab" data-cat="Coworking" onclick="setCat(this,'Coworking')">💻 Co-working <span class="ct-count" id="cnt-Coworking">0</span></button>
+      <button class="cat-tab" data-cat="Warehouse" onclick="setCat(this,'Warehouse')">🏭 Warehouse <span class="ct-count" id="cnt-Warehouse">0</span></button>
+      <button class="cat-tab" data-cat="Industrial" onclick="setCat(this,'Industrial')">⚙️ Industrial <span class="ct-count" id="cnt-Industrial">0</span></button>
+      <button class="cat-tab" data-cat="Showroom" onclick="setCat(this,'Showroom')">🚗 Showroom <span class="ct-count" id="cnt-Showroom">0</span></button>
     </div>
   </div>
-
-  <!-- Stats -->
-  <div class="hero-stats">
-    <div class="hstat"><div class="hstat-v" id="statListings">—</div><div class="hstat-l">Live Listings</div></div>
-    <div class="hstat"><div class="hstat-v">45+</div><div class="hstat-l">Business Parks</div></div>
-    <div class="hstat"><div class="hstat-v">12+</div><div class="hstat-l">Cities</div></div>
-    <div class="hstat"><div class="hstat-v">₹0</div><div class="hstat-l">Brokerage</div></div>
-    <div class="hstat"><div class="hstat-v">24hr</div><div class="hstat-l">Response</div></div>
-  </div>
-</header>
-
-<!-- Marquee -->
-<div class="mqbar">
-  <div class="mqtrack" id="mqtrack"></div>
 </div>
 
-<!-- Category bar -->
-<nav class="cat-bar">
-  <div class="cat-inner">
-    <button class="ctab active" data-type="all" onclick="setCat(this,'all')">🏢 All Commercial <span class="ctab-n" id="cntAll">—</span></button>
-    <button class="ctab" data-type="Office" onclick="setCat(this,'Office')">🖥️ Office <span class="ctab-n" id="cntOffice">—</span></button>
-    <button class="ctab" data-type="Retail" onclick="setCat(this,'Retail')">🏪 Retail <span class="ctab-n" id="cntRetail">—</span></button>
-    <button class="ctab" data-type="Coworking" onclick="setCat(this,'Coworking')">💻 Co-working <span class="ctab-n" id="cntCoworking">—</span></button>
-    <button class="ctab" data-type="Warehouse" onclick="setCat(this,'Warehouse')">🏭 Warehouse <span class="ctab-n" id="cntWarehouse">—</span></button>
-    <button class="ctab" data-type="Industrial" onclick="setCat(this,'Industrial')">⚙️ Industrial <span class="ctab-n" id="cntIndustrial">—</span></button>
-    <button class="ctab" data-type="Showroom" onclick="setCat(this,'Showroom')">🚗 Showroom <span class="ctab-n" id="cntShowroom">—</span></button>
-    <div class="cat-end">
-      <a class="btn btn-gold" href="/post-commercial" style="font-size:12px;padding:6px 14px">+ List</a>
-    </div>
-  </div>
-</nav>
+<div class="main-layout">
 
-<!-- Filter & Listing -->
-<section class="filter-sec">
-  <div class="W">
+  <aside class="filter-sidebar">
+    <div class="filter-sticky">
 
-    <div class="filter-bar rv">
-      <span class="f-label">🎛 Filters</span>
-      <div class="fchips">
-        <button class="fchip on" onclick="setChip('all',this)">All</button>
-        <button class="fchip" onclick="setChip('available',this)">✅ Available Now</button>
-        <button class="fchip" onclick="setChip('furnished',this)">🪑 Furnished</button>
-        <button class="fchip" onclick="setChip('verified',this)">✓ Verified</button>
-        <button class="fchip" onclick="setChip('new',this)">✨ New Listing</button>
-        <button class="fchip" onclick="setChip('premium',this)">★ Premium</button>
+      <div class="filter-card rv">
+        <div class="fc-head">
+          <div class="fc-title">Filters</div>
+          <button class="fc-reset" onclick="resetFilters()">Reset All</button>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Monthly Rent (up to)</div>
+          <div class="range-row"><span>₹10,000</span><span class="range-val" id="budgetLabel">Any</span></div>
+          <input type="range" class="frange" id="budgetRange" min="10000" max="1000000" value="1000000" step="10000" oninput="updateBudget(this.value)">
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Space Type</div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="type-Office"><div class="fcheck-box"></div><span class="fcheck-lbl">Office Space</span><span class="fcheck-count" id="fc-Office">0</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="type-Retail"><div class="fcheck-box"></div><span class="fcheck-lbl">Retail / Shop</span><span class="fcheck-count" id="fc-Retail">0</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="type-Coworking"><div class="fcheck-box"></div><span class="fcheck-lbl">Co-working</span><span class="fcheck-count" id="fc-Coworking">0</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="type-Warehouse"><div class="fcheck-box"></div><span class="fcheck-lbl">Warehouse</span><span class="fcheck-count" id="fc-Warehouse">0</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="type-Industrial"><div class="fcheck-box"></div><span class="fcheck-lbl">Industrial</span><span class="fcheck-count" id="fc-Industrial">0</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="type-Showroom"><div class="fcheck-box"></div><span class="fcheck-lbl">Showroom</span><span class="fcheck-count" id="fc-Showroom">0</span></div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Area (sq.ft)</div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="area-s"><div class="fcheck-box"></div><span class="fcheck-lbl">Under 1,000</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="area-m"><div class="fcheck-box"></div><span class="fcheck-lbl">1,000 – 3,000</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="area-l"><div class="fcheck-box"></div><span class="fcheck-lbl">3,000 – 10,000</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="area-xl"><div class="fcheck-box"></div><span class="fcheck-lbl">10,000+</span></div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Furnishing</div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="furn-Fully Furnished"><div class="fcheck-box"></div><span class="fcheck-lbl">Fully Furnished</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="furn-Semi-Furnished"><div class="fcheck-box"></div><span class="fcheck-lbl">Semi-Furnished</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="furn-Bare Shell"><div class="fcheck-box"></div><span class="fcheck-lbl">Bare Shell</span></div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Ideal For</div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-corp"><div class="fcheck-box"></div><span class="fcheck-lbl">Corporate / MNC</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-startup"><div class="fcheck-box"></div><span class="fcheck-lbl">Startup</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-retail"><div class="fcheck-box"></div><span class="fcheck-lbl">Retail Brand</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-mfg"><div class="fcheck-box"></div><span class="fcheck-lbl">Manufacturing</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-logi"><div class="fcheck-box"></div><span class="fcheck-lbl">Logistics / 3PL</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-it"><div class="fcheck-box"></div><span class="fcheck-lbl">IT / ITES</span></div>
+          <div class="fcheck" onclick="toggleCheck(this)" data-filter="ideal-fnb"><div class="fcheck-box"></div><span class="fcheck-lbl">F&amp;B / Restaurant</span></div>
+        </div>
       </div>
-      <div class="fcontrols">
-        <select class="fsel" id="fCity" onchange="applyFilters()">
-          <option value="">All Cities</option>
-          <option>Hyderabad</option><option>Bangalore</option><option>Mumbai</option>
-          <option>Delhi NCR</option><option>Chennai</option><option>Pune</option>
-        </select>
-        <select class="fsel" id="fBudget" onchange="applyFilters()">
-          <option value="">Any Budget</option>
-          <option value="50000">Under ₹50K/mo</option>
-          <option value="150000">Under ₹1.5L/mo</option>
-          <option value="300000">Under ₹3L/mo</option>
-          <option value="600000">Under ₹6L/mo</option>
-        </select>
-        <select class="fsel" id="fSort" onchange="applyFilters()">
+
+      <div class="filter-card rv d1">
+        <div class="fc-head"><div class="fc-title">Must-Have Amenities</div></div>
+        <div class="ftoggle" data-filter="amen-parking" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">🅿️ Parking</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-power" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">⚡ Power Backup</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-ac" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">❄️ Air Conditioning</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-fibre" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">📶 Fibre / Internet</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-security" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">🔒 24/7 Security</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-lift" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">🛗 Lift / Elevator</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-cafe" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">🍽️ Cafeteria / Pantry</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="amen-cctv" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">📹 CCTV</span><div class="ftoggle-sw"></div></div>
+      </div>
+
+      <div class="filter-card rv d2" style="background:linear-gradient(135deg,rgba(196,92,60,.06),rgba(196,92,60,.02))">
+        <div class="fc-head"><div class="fc-title">Quality Filters</div></div>
+        <div class="ftoggle" data-filter="q-verified" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">✅ Verified Properties Only</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="q-available" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">🟢 Available Now</span><div class="ftoggle-sw"></div></div>
+        <div class="ftoggle" data-filter="q-new" onclick="toggleSwitch(this)"><span class="ftoggle-lbl">✨ New Listings Only</span><div class="ftoggle-sw"></div></div>
+      </div>
+
+    </div>
+  </aside>
+
+  <div>
+
+    <div class="map-view-banner rv">
+      <div>
+        <div class="mvb-t">🗺️ Looking for spaces by location?</div>
+        <div style="font-size:12px;color:var(--sage);margin-top:2px">Map view is on the way — you'll soon be able to see every space on a neighbourhood map.</div>
+      </div>
+      <button class="mvb-btn" onclick="showToast('🗺️ Map view is coming soon!')">Map View · Soon</button>
+    </div>
+
+    <div class="sort-bar rv d1">
+      <div class="sort-count"><em id="resultCount">0</em> commercial properties found</div>
+      <div class="sort-controls">
+        <select class="fsel" id="sortSel" onchange="applyAllFilters()">
           <option value="">Sort: Recommended</option>
           <option value="price_asc">Price: Low → High</option>
           <option value="price_desc">Price: High → Low</option>
           <option value="area">Area: Large First</option>
+          <option value="newest">Newest First</option>
           <option value="rating">Highest Rated</option>
-          <option value="new">Newest First</option>
+          <option value="popular">Most Viewed</option>
         </select>
-      </div>
-    </div>
-
-    <div class="results-row rv">
-      <div class="rcount"><em id="rCount">0</em> commercial properties found</div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div class="view-sw">
-          <button class="vsw on" id="gBtn" onclick="setView('grid')" title="Grid view">⊞</button>
-          <button class="vsw" id="lBtn" onclick="setView('list')" title="List view">☰</button>
+        <div class="view-toggle">
+          <button class="vbtn on" id="gridBtn" onclick="setView('grid')" title="Grid">⊞</button>
+          <button class="vbtn" id="listBtn" onclick="setView('list')" title="List">☰</button>
         </div>
       </div>
     </div>
 
-    <div class="prop-grid rv d1" id="propGrid">
-      <!-- Loaded from Firestore -->
-      <div class="loading-grid">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading listings…</div>
-      </div>
+    <div class="cards-grid rv d2" id="cardsGrid">
+      <div class="empty-state"><span class="es-ic">⏳</span><div class="es-t">Loading listings…</div></div>
     </div>
 
   </div>
-</section>
 
-<!-- Why SmartRent -->
-<section class="why-sec">
-  <div class="W">
-    <div class="rv">
-      <p class="sec-eyebrow">The Advantage</p>
-      <h2 class="sec-h2">Why Rent Commercial Space<br><em>Through SmartRent</em></h2>
-    </div>
-    <div class="why-grid rv d1">
-      <article class="wcard">
-        <span class="wcard-ic">⚡</span>
-        <h3 class="wcard-t">Zero Brokerage</h3>
-        <p class="wcard-d">Connect directly with landlords — no broker commissions, no hidden charges. Transparent lease terms from day one.</p>
-      </article>
-      <article class="wcard">
-        <span class="wcard-ic">✅</span>
-        <h3 class="wcard-t">100% Verified</h3>
-        <p class="wcard-d">Every listing physically inspected by our commercial team. Legal clearances, occupancy certificates, and RERA compliance all checked.</p>
-      </article>
-      <article class="wcard">
-        <span class="wcard-ic">🎯</span>
-        <h3 class="wcard-t">Right-Fit Search</h3>
-        <p class="wcard-d">Filter by city, type, budget and floor area to find spaces that genuinely match your headcount, growth plans and business needs.</p>
-      </article>
-      <article class="wcard">
-        <span class="wcard-ic">📊</span>
-        <h3 class="wcard-t">Market Intelligence</h3>
-        <p class="wcard-d">Real-time rent benchmarks, vacancy analytics, and micro-market trends to help you negotiate the best commercial lease.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-sec">
-  <div class="W">
-    <div class="cta-inner rv">
-      <div>
-        <p class="sec-eyebrow" style="color:rgba(181,116,42,.8)">For Commercial Landlords</p>
-        <h2 class="cta-t">Own Commercial Space?<br><em>List It Free Today</em></h2>
-        <p class="cta-d">Connect with verified businesses, corporates and entrepreneurs actively searching for commercial space. Receive genuine enquiries and maximise returns.</p>
-      </div>
-      <div class="cta-btns">
-        <a class="cta-main" href="/post-commercial">🏢 List Commercial Property Free</a>
-        <a class="cta-ghost" href="/owner-dashboard">📋 Owner Dashboard</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer>
-  <div class="W">
-    <div class="foot-grid">
-      <div>
-        <a href="/" class="brand" style="margin-bottom:16px;display:flex;text-decoration:none">
-          <div class="brand-gem" style="width:30px;height:30px;font-size:14px">💎</div>
-          <span class="brand-name" style="font-size:17px">SmartRent</span>
-        </a>
-        <p class="fb-d">India's trusted rental platform for PGs, flats, co-living &amp; commercial — zero brokerage, fully verified.</p>
-        <div class="socs">
-          <a class="soc" href="#" title="Twitter">𝕏</a>
-          <a class="soc" href="#" title="Instagram">📸</a>
-          <a class="soc" href="#" title="LinkedIn">in</a>
-        </div>
-      </div>
-      <nav>
-        <h3 class="ft-t">For Tenants</h3>
-        <a class="fl" href="/pgs-hostels">Browse PG &amp; Hostels</a>
-        <a class="fl" href="/properties">Flat Search</a>
-        <a class="fl" href="/properties">Co-living</a>
-        <a class="fl" href="/commercial">Commercial Spaces</a>
-      </nav>
-      <nav>
-        <h3 class="ft-t">For Owners</h3>
-        <a class="fl" href="/post-property">List Property Free</a>
-        <a class="fl" href="/owner-dashboard">Owner Dashboard</a>
-      </nav>
-      <nav>
-        <h3 class="ft-t">Company</h3>
-        <a class="fl" href="/about-us">About Us</a>
-        <a class="fl" href="/privacy">Privacy Policy</a>
-        <a class="fl" href="/terms">Terms &amp; Conditions</a>
-        <a class="fl" href="/contact">Contact Us</a>
-      </nav>
-    </div>
-    <div class="foot-bot">
-      <p class="foot-copy">© 2025–2026 SmartRent. All rights reserved. Built with ❤️ in India.</p>
-    </div>
-  </div>
-</footer>
+</div>
 `;
 
-const FONTS_HREF =
-  "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
-
-const TYPE_EMOJI = {
-  Office: "🏢", Retail: "🏪", Coworking: "💻",
-  Warehouse: "🏭", Industrial: "⚙️", Showroom: "🚗",
-};
+const WA_PATH = "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z";
 
 export default function CommercialPage() {
   const rootRef = useRef(null);
@@ -359,295 +266,439 @@ export default function CommercialPage() {
     }
 
     const $ = (id) => root.querySelector("#" + id);
-    const $$ = (sel) => root.querySelectorAll(sel);
+    const cleanupFns = [];
 
-    let _all = [];
-    let _catType = "all";
-    let _chipType = "all";
-    const _saved = new Set();
-    let toastTimer;
+    /* ── STATE ── */
+    let allProps = [];
+    let activeCategory = "all";
+    let currentView = "grid";
+    let budgetMax = BUDGET_MAX;
+    let savedIds = new Set();
+    let compareIds = new Set();
     let cancelled = false;
+
+    try {
+      const s = localStorage.getItem("sr_watchlist");
+      if (s) JSON.parse(s).forEach((id) => savedIds.add(id));
+    } catch (_) {}
 
     const esc = (v) =>
       String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-    function showToast(msg, ms = 3200) {
-      const t = $("toast");
-      if (!t) return;
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+    /* ── Firestore doc → card shape ── */
+    function isRecent(createdAt, days = 7) {
+      try {
+        const d = createdAt?.toDate ? createdAt.toDate() : createdAt ? new Date(createdAt) : null;
+        return d ? Date.now() - d.getTime() < days * 86400000 : false;
+      } catch (e) {
+        return false;
+      }
     }
 
-    const isAvail = (p) => p.available !== false && p.avail !== false;
-    const isNewL = (p) => p.isNew || p.newListing;
+    function mapDoc(d) {
+      const isNew = !!(d.isNew || d.newListing) || isRecent(d.createdAt);
+      const badges = [];
+      if (d.verified) badges.push({ c: "pb-v", l: "✓ VERIFIED" });
+      if (d.premium) badges.push({ c: "pb-p", l: "★ PREMIUM" });
+      if (d.hot) badges.push({ c: "pb-h", l: "🔥 HOT" });
+      if (isNew) badges.push({ c: "pb-n", l: "✨ NEW" });
+      const furn = d.furnishing === "Shell" ? "Bare Shell" : d.furnishing || (d.furnished ? "Furnished" : "Bare Shell");
+      const sqft = Number(String(d.sqft || "").replace(/,/g, "")) || 0;
+      const phone = d.owner?.phone || d.phone || "";
+      return {
+        id: d.id,
+        subtype: d.type || "Office",
+        title: d.name || "Untitled Space",
+        city: d.city || "",
+        area: d.area || "",
+        price: Number(d.price) || 0,
+        per: d.per || "month",
+        rating: d.rating || null,
+        reviews: d.reviews || 0,
+        furnish: furn,
+        floor: d.floor && d.floor !== "—" ? d.floor : "",
+        size: sqft || null,
+        badges,
+        amenities: Array.isArray(d.amenities) && d.amenities.length ? d.amenities : Array.isArray(d.tags) ? d.tags : [],
+        ideal: Array.isArray(d.idealFor) ? d.idealFor : [],
+        whatsapp: d.owner?.whatsapp || phone,
+        phone,
+        ownerUid: d.ownerUid || d.owner?.uid || "",
+        verified: !!d.verified,
+        available: d.available !== false && d.avail !== false,
+        isNew,
+        views: d.views || 0,
+        coverImage: d.coverPhoto || (Array.isArray(d.photos) ? d.photos[0] : null) || null,
+        createdAt: d.createdAt?.seconds || 0,
+      };
+    }
 
-    /* ── load from Firestore ── */
-    async function loadListings() {
+    /* ── RENDER CARDS ── */
+    function renderCards(data) {
+      const grid = $("cardsGrid");
+      $("resultCount").textContent = data.length;
+
+      if (!data.length) {
+        grid.innerHTML = allProps.length
+          ? `<div class="empty-state"><span class="es-ic">🏢</span><div class="es-t">No properties match your filters</div><div class="es-d">Try adjusting the filters or search with different keywords.</div></div>`
+          : `<div class="empty-state"><span class="es-ic">🏢</span><div class="es-t">No commercial listings yet</div><div class="es-d">Be the first to list a commercial space.</div><a class="nb nb-terra" href="/post-commercial" style="text-decoration:none;margin-top:16px;display:inline-flex">+ List Commercial</a></div>`;
+        return;
+      }
+
+      grid.innerHTML = data
+        .map((p, i) => {
+          const emoji = TYPE_EMOJI[p.subtype] || "🏢";
+          const isSaved = savedIds.has(p.id);
+          const isCompare = compareIds.has(p.id);
+          const id = esc(p.id);
+          const waNum = (p.whatsapp || "").replace(/[^\d]/g, "");
+          const waLink = waNum
+            ? `https://wa.me/${waNum.length === 10 ? "91" + waNum : waNum}?text=${encodeURIComponent(`Hi! I'm interested in your property: ${p.title} listed on SmartRent. Could you please share more details?`)}`
+            : "";
+          const ratingLabel = p.rating ? `⭐ ${esc(p.rating)}` : "🆕 New";
+          const reviewsLabel = p.reviews ? ` <span style="opacity:.6;font-size:10px">(${esc(p.reviews)})</span>` : "";
+          const viewsLabel = p.views >= 1000 ? (p.views / 1000).toFixed(1) + "K" : p.views;
+
+          const cardImageInner = p.coverImage
+            ? `<img class="pcard-photo" src="${esc(p.coverImage)}" alt="${esc(p.title)}" loading="lazy"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+               <div class="pcard-emoji" style="display:none">${emoji}</div>`
+            : `<div class="pcard-emoji">${emoji}</div>`;
+
+          return `
+          <div class="pcard" style="animation-delay:${i * 0.05}s" onclick="goToDetail('${id}')">
+            <div class="pcard-img" style="background:${TYPE_BG}">
+              ${cardImageInner}
+              <div class="pcard-img-ov"></div>
+              <div class="pcard-badges">${p.badges.map((b) => `<span class="pbdg ${b.c}">${b.l}</span>`).join("")}</div>
+              <div class="pcard-save ${isSaved ? "saved" : ""}" onclick="event.stopPropagation();toggleSave(this,'${id}')" title="Save to wishlist">${isSaved ? "❤️" : "🤍"}</div>
+              <div class="pcard-img-foot">
+                <div class="pif-rat">${ratingLabel}${reviewsLabel}</div>
+                <div class="pif-views">👁 ${viewsLabel} views</div>
+              </div>
+            </div>
+
+            <div class="pcard-body">
+              <div class="pcard-type-row">
+                <span class="pcard-type">${esc(TYPE_LABEL[p.subtype] || p.subtype)}</span>
+                <span class="pcard-avail ${p.available ? "" : "leased"}">${p.available ? "Available" : "Leased"}</span>
+              </div>
+              <div class="pcard-title">${esc(p.title)}</div>
+              <div class="pcard-loc">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                ${esc([p.area, p.city].filter(Boolean).join(", ") || "—")}
+              </div>
+              <div class="pcard-specs">
+                ${p.size ? `<div class="pspec"><span class="pspec-ic">📐</span>${p.size.toLocaleString("en-IN")} sqft</div>` : ""}
+                ${p.floor ? `<div class="pspec"><span class="pspec-ic">🏢</span>${esc(p.floor)}</div>` : ""}
+                ${p.furnish ? `<div class="pspec"><span class="pspec-ic">🪑</span>${esc(p.furnish)}</div>` : ""}
+              </div>
+              <div class="pcard-amens">${p.amenities.slice(0, 5).map((a) => `<span class="pa">${esc(a)}</span>`).join("")}</div>
+
+              <div class="pcard-footer">
+                <div class="pcard-price">
+                  <span class="cur">₹</span>${p.price.toLocaleString("en-IN")}
+                  <span class="per">/ ${esc(p.per)}</span>
+                </div>
+                <div class="pcard-actions">
+                  <button class="btn-call ${isCompare ? "active-compare" : ""}" title="Compare" onclick="event.stopPropagation();toggleCompare(this,'${id}')" style="${isCompare ? "background:var(--terra-d);border-color:var(--terra-b);color:var(--terra)" : ""}">⊞</button>
+                  ${waLink ? `<a class="btn-wa" href="${waLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="${WA_PATH}"/></svg>
+                    WhatsApp
+                  </a>` : ""}
+                  <a class="btn-view" href="/property-detail?id=${encodeURIComponent(p.id)}&type=commercial" onclick="event.stopPropagation()">View →</a>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        })
+        .join("");
+    }
+
+    /* ── FILTERS ── */
+    function activeFilters(prefix) {
+      return [...root.querySelectorAll(`[data-filter^="${prefix}-"].on`)].map((el) => el.getAttribute("data-filter").slice(prefix.length + 1));
+    }
+
+    function applyAllFilters() {
+      let data = [...allProps];
+      const q = $("searchQ").value.trim().toLowerCase();
+      const city = $("searchCity").value;
+      const type = $("searchType").value;
+      const sort = $("sortSel").value;
+
+      if (activeCategory !== "all") data = data.filter((p) => p.subtype === activeCategory);
+      if (type) data = data.filter((p) => p.subtype === type);
+      if (city) data = data.filter((p) => p.city === city);
+      if (q)
+        data = data.filter((p) => [p.title, p.area, p.city, p.subtype].some((s) => (s || "").toLowerCase().includes(q)));
+
+      if (budgetMax < BUDGET_MAX) data = data.filter((p) => p.price <= budgetMax);
+
+      const types = activeFilters("type");
+      if (types.length) data = data.filter((p) => types.includes(p.subtype));
+
+      const areas = activeFilters("area");
+      if (areas.length) {
+        const inB = (s, b) => (b === "s" ? s < 1000 : b === "m" ? s >= 1000 && s < 3000 : b === "l" ? s >= 3000 && s < 10000 : s >= 10000);
+        data = data.filter((p) => areas.some((b) => inB(p.size || 0, b)));
+      }
+
+      const furns = activeFilters("furn");
+      if (furns.length)
+        data = data.filter((p) => furns.some((f) => (p.furnish || "").toLowerCase().startsWith(f.toLowerCase().split(" ")[0]) || (p.furnish || "").toLowerCase() === f.toLowerCase()));
+
+      const ideals = activeFilters("ideal");
+      if (ideals.length) data = data.filter((p) => ideals.some((k) => p.ideal.some((s) => IDEAL_KEYS[k].test(s))));
+
+      activeFilters("amen").forEach((k) => {
+        data = data.filter((p) => p.amenities.some((a) => AMEN_KEYS[k].test(a)));
+      });
+
+      const quality = activeFilters("q");
+      if (quality.includes("verified")) data = data.filter((p) => p.verified);
+      if (quality.includes("available")) data = data.filter((p) => p.available);
+      if (quality.includes("new")) data = data.filter((p) => p.isNew);
+
+      if (sort === "price_asc") data.sort((a, b) => a.price - b.price);
+      else if (sort === "price_desc") data.sort((a, b) => b.price - a.price);
+      else if (sort === "area") data.sort((a, b) => (b.size || 0) - (a.size || 0));
+      else if (sort === "newest") data.sort((a, b) => b.createdAt - a.createdAt);
+      else if (sort === "rating") data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      else if (sort === "popular") data.sort((a, b) => b.views - a.views);
+
+      renderCards(data);
+    }
+
+    function setCat(el, cat) {
+      root.querySelectorAll(".cat-tab").forEach((t) => t.classList.remove("on"));
+      el.classList.add("on");
+      activeCategory = cat;
+      applyAllFilters();
+    }
+
+    function liveSearch() {
+      applyAllFilters();
+    }
+
+    function resetFilters() {
+      $("searchQ").value = "";
+      $("searchCity").value = "";
+      $("searchType").value = "";
+      $("sortSel").value = "";
+      $("budgetRange").value = BUDGET_MAX;
+      setBudgetLabel(BUDGET_MAX);
+      root.querySelectorAll(".fcheck").forEach((c) => {
+        c.classList.remove("on");
+        c.querySelector(".fcheck-box").textContent = "";
+      });
+      root.querySelectorAll(".ftoggle").forEach((t) => t.classList.remove("on"));
+      activeCategory = "all";
+      const tabs = root.querySelectorAll(".cat-tab");
+      tabs.forEach((t) => t.classList.remove("on"));
+      if (tabs[0]) tabs[0].classList.add("on");
+      applyAllFilters();
+      toast("🔄 Filters reset");
+    }
+
+    function toggleCheck(el) {
+      el.classList.toggle("on");
+      el.querySelector(".fcheck-box").textContent = el.classList.contains("on") ? "✓" : "";
+      applyAllFilters();
+    }
+
+    function toggleSwitch(el) {
+      el.classList.toggle("on");
+      applyAllFilters();
+    }
+
+    function setBudgetLabel(val) {
+      budgetMax = parseInt(val, 10);
+      const pct = ((val - BUDGET_MIN) / (BUDGET_MAX - BUDGET_MIN)) * 100;
+      $("budgetRange").style.setProperty("--range-pct", pct + "%");
+      $("budgetLabel").textContent =
+        budgetMax >= BUDGET_MAX ? "Any" : budgetMax >= 100000 ? "₹" + (budgetMax / 100000).toFixed(1) + "L" : "₹" + budgetMax.toLocaleString("en-IN");
+    }
+
+    function updateBudget(val) {
+      setBudgetLabel(val);
+      applyAllFilters();
+    }
+
+    /* ── VIEW ── */
+    function setView(v) {
+      currentView = v;
+      $("cardsGrid").classList.toggle("list-view", v === "list");
+      $("gridBtn").classList.toggle("on", v === "grid");
+      $("listBtn").classList.toggle("on", v === "list");
+    }
+
+    /* ── SAVE (this browser) ── */
+    function toggleSave(btn, id) {
+      if (savedIds.has(id)) {
+        savedIds.delete(id);
+        btn.textContent = "🤍";
+        btn.classList.remove("saved");
+        toast("💔 Removed from wishlist");
+      } else {
+        savedIds.add(id);
+        btn.textContent = "❤️";
+        btn.classList.add("saved");
+        toast("❤️ Saved to wishlist!");
+      }
+      try { localStorage.setItem("sr_watchlist", JSON.stringify([...savedIds])); } catch (_) {}
+    }
+
+    /* ── COMPARE ── */
+    const ACTIVE_CMP = "background:var(--terra-d);border-color:var(--terra-b);color:var(--terra)";
+    function toggleCompare(btn, id) {
+      if (compareIds.has(id)) {
+        compareIds.delete(id);
+        btn.style.cssText = "";
+        toast("⊟ Removed from compare");
+      } else {
+        if (compareIds.size >= 3) {
+          toast("⚠️ Max 3 properties can be compared");
+          return;
+        }
+        compareIds.add(id);
+        btn.style.cssText = ACTIVE_CMP;
+        toast("⊞ Added to compare!");
+      }
+      updateCompareBar();
+    }
+
+    function updateCompareBar() {
+      const ids = [...compareIds];
+      ["cs1", "cs2", "cs3"].forEach((slotId, i) => {
+        const el = $(slotId);
+        if (ids[i] !== undefined) {
+          const p = allProps.find((x) => x.id === ids[i]);
+          el.className = "cb-slot filled";
+          el.textContent = p ? p.title.substring(0, 22) + "…" : "";
+        } else {
+          el.className = "cb-slot";
+          el.textContent = "+ Add property";
+        }
+      });
+      $("compareBar").classList.toggle("show", compareIds.size > 0);
+    }
+
+    function doCompare() {
+      toast("📊 Property comparison launching soon! We're building something great.");
+    }
+    function clearCompare() {
+      compareIds.clear();
+      root.querySelectorAll(".btn-call").forEach((b) => (b.style.cssText = ""));
+      updateCompareBar();
+    }
+
+    function goToDetail(id) {
+      window.location.href = "/property-detail?id=" + encodeURIComponent(id) + "&type=commercial";
+    }
+
+    /* ── STAT COUNTERS ── */
+    function animCount(id, target, delay = 0) {
+      const el = $(id);
+      if (!el) return;
+      setTimeout(() => {
+        const dur = 1200, start = performance.now();
+        const tick = (now) => {
+          const p = Math.min((now - start) / dur, 1);
+          el.textContent = Math.floor((1 - Math.pow(1 - p, 4)) * target);
+          if (p < 1 && !cancelled) requestAnimationFrame(tick);
+          else el.textContent = target;
+        };
+        requestAnimationFrame(tick);
+      }, delay);
+    }
+
+    function updateCounts() {
+      $("cnt-all").textContent = allProps.length;
+      TYPES.forEach((t) => {
+        const n = allProps.filter((p) => p.subtype === t).length;
+        const a = $("cnt-" + t);
+        const b = $("fc-" + t);
+        if (a) a.textContent = n;
+        if (b) b.textContent = n;
+      });
+      const cities = new Set(allProps.map((p) => p.city).filter(Boolean));
+      const owners = new Set(allProps.filter((p) => p.verified).map((p) => p.ownerUid).filter(Boolean));
+      animCount("stat-listings", allProps.length);
+      animCount("stat-cities", cities.size, 150);
+      animCount("stat-owners", owners.size, 300);
+    }
+
+    /* ── NAVBAR, MOBILE MENU, TOAST, REVEAL ── */
+    const onScroll = () => {
+      $("navbar")?.classList.toggle("solid", window.scrollY > 40);
+      const t = document.documentElement;
+      const h = t.scrollHeight - window.innerHeight;
+      if ($("pgBar")) $("pgBar").style.width = Math.min(h > 0 ? (window.scrollY / h) * 100 : 0, 100) + "%";
+    };
+    window.addEventListener("scroll", onScroll);
+    cleanupFns.push(() => window.removeEventListener("scroll", onScroll));
+
+    function toggleMob() {
+      const open = $("mobDrawer").classList.toggle("open");
+      $("mobBtn").textContent = open ? "✕" : "☰";
+    }
+
+    let toastTimer;
+    function toast(msg) {
+      const el = $("toast");
+      if (!el) return;
+      el.innerHTML = msg;
+      el.style.display = "block";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => (el.style.display = "none"), 3500);
+    }
+    cleanupFns.push(() => clearTimeout(toastTimer));
+
+    const obs = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            obs.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.08 }
+    );
+    root.querySelectorAll(".rv").forEach((el) => obs.observe(el));
+    cleanupFns.push(() => obs.disconnect());
+
+    /* ── expose handlers used by inline onclick="" ── */
+    const handlers = {
+      setCat, applyAllFilters, liveSearch, resetFilters, toggleCheck, toggleSwitch, updateBudget,
+      setView, toggleSave, toggleCompare, doCompare, clearCompare, goToDetail, toggleMob, showToast: toast,
+    };
+    Object.assign(window, handlers);
+
+    setBudgetLabel(BUDGET_MAX);
+
+    /* ── load live listings ── */
+    (async () => {
       try {
         const snap = await getDocs(query(collection(db, "commercialProperties"), limit(100)));
         if (cancelled) return;
-        _all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        _all.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-        updateCounters();
-        applyFilters();
-      } catch (err) {
-        console.error("Firestore error:", err);
+        allProps = snap.docs.map((d) => mapDoc({ id: d.id, ...d.data() }));
+        allProps.sort((a, b) => b.createdAt - a.createdAt);
+        updateCounts();
+        applyAllFilters();
+      } catch (e) {
+        console.error("Could not load commercial listings:", e);
         if (cancelled) return;
-        $("propGrid").innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">🏢</div>
-            <div class="empty-text">No listings found. Be the first to list a commercial property.</div>
-            <div style="margin-top:14px"><a class="btn btn-gold" href="/post-commercial">+ List Commercial Property</a></div>
-          </div>`;
-        $("rCount").textContent = "0";
+        $("cardsGrid").innerHTML = `<div class="empty-state"><span class="es-ic">⚠️</span><div class="es-t">Couldn't load listings</div><div class="es-d">Please check your connection and refresh the page.</div></div>`;
       }
-    }
-
-    function updateCounters() {
-      $("statListings").textContent = _all.length;
-      $("cntAll").textContent = _all.length;
-      ["Office", "Retail", "Coworking", "Warehouse", "Industrial", "Showroom"].forEach((t) => {
-        const el = $("cnt" + t);
-        if (el) el.textContent = _all.filter((p) => p.type === t).length;
-      });
-    }
-
-    function renderGrid(data) {
-      $("rCount").textContent = data.length;
-      const grid = $("propGrid");
-      if (!data.length) {
-        grid.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">🔍</div>
-            <div class="empty-text">${_all.length ? "No properties match your filters." : "No listings yet. Be the first to list a commercial property."}</div>
-          </div>`;
-        return;
-      }
-      grid.innerHTML = data.map((p, i) => buildCard(p, i)).join("");
-    }
-
-    function buildCard(p, i) {
-      const saved = _saved.has(p.id);
-      const imgSrc = p.coverPhoto || p.photos?.[0] || "";
-      const emoji = TYPE_EMOJI[p.type] || "🏢";
-      const price = typeof p.price === "number" ? p.price.toLocaleString("en-IN") : esc(p.price || "—");
-      const per = esc(p.per || "month");
-      const sqft = esc(p.sqft || p.area || "—");
-      const unit = esc(p.unit || "sqft");
-      const floor = esc(String(p.floor || "—").split(" ")[0]);
-      const furnished = p.furnished ? "Yes" : "Shell";
-      const tags = Array.isArray(p.tags) ? p.tags.slice(0, 3) : [];
-
-      const badges = [];
-      if (p.verified) badges.push('<span class="badge badge-verified">✓ Verified</span>');
-      if (p.premium) badges.push('<span class="badge badge-premium">★ Premium</span>');
-      if (isNewL(p)) badges.push('<span class="badge badge-new">New</span>');
-      if (p.hot) badges.push('<span class="badge badge-hot">Hot</span>');
-
-      const imgHtml = imgSrc
-        ? `<img src="${esc(imgSrc)}" alt="${esc(p.name || "Property")}" loading="lazy" />`
-        : `<div class="card-img-placeholder">${emoji}</div>`;
-      const id = esc(p.id);
-
-      return `
-<div class="prop-card" style="animation-delay:${i * 0.05}s">
-  <div class="card-img">
-    ${imgHtml}
-    <div class="img-overlay"></div>
-    <div class="img-badges">${badges.join("")}</div>
-    <button class="save-btn" onclick="toggleSave(this,'${id}')" title="${saved ? "Remove" : "Save"}">${saved ? "❤️" : "🤍"}</button>
-    <div class="img-foot">
-      ${p.rating ? `<div class="img-rating">⭐ ${esc(p.rating)} <span style="opacity:.6;font-size:10px">(${esc(p.reviews || 0)})</span></div>` : "<div></div>"}
-      <div class="img-area">${sqft} ${unit}</div>
-    </div>
-  </div>
-  <div class="card-body">
-    <div class="type-avail">
-      <span class="type-chip">${esc(p.type || "Commercial")}</span>
-      ${isAvail(p) ? '<span class="avail-yes">● Available</span>' : '<span class="avail-no">● Leased</span>'}
-    </div>
-    <div class="card-name" title="${esc(p.name || "")}">${esc(p.name || "Unnamed Property")}</div>
-    <div class="card-loc">
-      <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 12.414a4 4 0 10-5.656 5.656L8 19l6-6"/>
-      </svg>
-      ${esc([p.area, p.city].filter(Boolean).join(", ") || "—")}
-    </div>
-    <div class="specs">
-      <div class="spec"><div class="spec-v">${sqft}</div><div class="spec-l">${unit}</div></div>
-      <div class="spec"><div class="spec-v">${floor}</div><div class="spec-l">Floor</div></div>
-      <div class="spec"><div class="spec-v">${furnished}</div><div class="spec-l">Furnished</div></div>
-    </div>
-    ${tags.length ? `<div class="tags">${tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
-    <div class="card-foot">
-      <div class="price-block">
-        <div class="price-val"><span class="cur">₹</span>${price}</div>
-        <div class="price-per">/${per}</div>
-      </div>
-      <div class="card-btns">
-        <button class="btn-call" onclick="callOwner('${id}')">📞 Call</button>
-        <a class="btn-view" href="/property-detail?id=${encodeURIComponent(p.id)}&type=commercial">View →</a>
-      </div>
-    </div>
-  </div>
-</div>`;
-    }
-
-    /* ── filters ── */
-    function setCat(el, type) {
-      $$(".ctab").forEach((t) => t.classList.remove("active"));
-      el.classList.add("active");
-      _catType = type;
-      applyFilters();
-    }
-    function setChip(type, el) {
-      $$(".fchip").forEach((c) => c.classList.remove("on"));
-      el.classList.add("on");
-      _chipType = type;
-      applyFilters();
-    }
-    function applyFilters() {
-      let d = [..._all];
-      if (_catType !== "all") d = d.filter((p) => p.type === _catType);
-
-      if (_chipType === "available") d = d.filter(isAvail);
-      else if (_chipType === "furnished") d = d.filter((p) => p.furnished);
-      else if (_chipType === "verified") d = d.filter((p) => p.verified);
-      else if (_chipType === "new") d = d.filter(isNewL);
-      else if (_chipType === "premium") d = d.filter((p) => p.premium);
-
-      const city = $("fCity").value;
-      if (city) d = d.filter((p) => p.city === city);
-
-      const bud = parseInt($("fBudget").value, 10);
-      if (bud) d = d.filter((p) => typeof p.price === "number" && p.price <= bud);
-
-      const sort = $("fSort").value;
-      const sq = (p) => parseInt(String(p.sqft || "0").replace(/,/g, ""), 10) || 0;
-      if (sort === "price_asc") d.sort((a, b) => (a.price || 0) - (b.price || 0));
-      if (sort === "price_desc") d.sort((a, b) => (b.price || 0) - (a.price || 0));
-      if (sort === "area") d.sort((a, b) => sq(b) - sq(a));
-      if (sort === "rating") d.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      if (sort === "new") d.sort((a, b) => (isNewL(b) ? 1 : 0) - (isNewL(a) ? 1 : 0));
-
-      renderGrid(d);
-    }
-
-    function doSearch() {
-      const q = $("sQ").value.trim().toLowerCase();
-      const city = $("sCity").value;
-      const type = $("sType").value;
-      let d = [..._all];
-      if (q)
-        d = d.filter(
-          (p) =>
-            (p.name || "").toLowerCase().includes(q) ||
-            (p.area || "").toLowerCase().includes(q) ||
-            (p.city || "").toLowerCase().includes(q)
-        );
-      if (city) d = d.filter((p) => p.city === city);
-      if (type) {
-        _catType = type;
-        d = d.filter((p) => p.type === type);
-      }
-      renderGrid(d);
-      root.querySelector(".filter-sec")?.scrollIntoView({ behavior: "smooth" });
-    }
-
-    function setPill(el, type) {
-      $$(".tpill").forEach((p) => p.classList.remove("on"));
-      el.classList.add("on");
-      _catType = type === "all" ? "all" : type;
-      $$(".ctab").forEach((t) => t.classList.toggle("active", t.getAttribute("data-type") === _catType));
-      applyFilters();
-    }
-
-    function setView(v) {
-      $("propGrid").classList.toggle("list-view", v === "list");
-      $("gBtn").classList.toggle("on", v === "grid");
-      $("lBtn").classList.toggle("on", v === "list");
-    }
-
-    function toggleSave(btn, id) {
-      if (_saved.has(id)) {
-        _saved.delete(id);
-        btn.textContent = "🤍";
-        showToast("💔 Removed from watchlist");
-      } else {
-        _saved.add(id);
-        btn.textContent = "❤️";
-        showToast("❤️ Added to watchlist!");
-      }
-      try { localStorage.setItem("sr_watchlist", JSON.stringify([..._saved])); } catch (_) {}
-    }
-
-    function callOwner(id) {
-      const p = _all.find((x) => x.id === id);
-      const phone = (p?.owner?.phone || p?.phone || "").replace(/[^\d+]/g, "");
-      if (!phone) {
-        showToast("📞 Phone number not available — open the listing to enquire.");
-        return;
-      }
-      window.location.href = "tel:" + phone;
-    }
-
-    /* ── marquee / reveal / menu / navbar ── */
-    const items = [
-      "📍 Hyderabad IT Parks — ₹65/sqft",
-      "🌟 Zero Brokerage Guaranteed",
-      "✅ 100% Verified Commercial Spaces",
-      "🚀 Right-Fit Space Search",
-      "💼 12+ Cities Covered",
-      "🎯 Instant Owner Connect",
-      "🏭 Warehouses From ₹18/sqft",
-      "🏢 Grade-A Offices Available Now",
-    ];
-    $("mqtrack").innerHTML = [...items, ...items]
-      .map((it) => `<div class="mqitem"><span>🏢</span><span class="mqitem-tx">${it}</span></div>`)
-      .join("");
-
-    const io = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-        }),
-      { threshold: 0.1 }
-    );
-    $$(".rv").forEach((el) => io.observe(el));
-
-    const btn = $("mobBtn");
-    const drawer = $("mobDrawer");
-    const onBtn = () => drawer.classList.toggle("open");
-    const onDocClick = (e) => {
-      if (!drawer.contains(e.target) && e.target !== btn) drawer.classList.remove("open");
-    };
-    btn.addEventListener("click", onBtn);
-    document.addEventListener("click", onDocClick);
-
-    const onScroll = () => $("navbar")?.classList.toggle("scrolled", window.scrollY > 8);
-    window.addEventListener("scroll", onScroll);
-
-    try {
-      const s = localStorage.getItem("sr_watchlist");
-      if (s) JSON.parse(s).forEach((id) => _saved.add(id));
-    } catch (_) {}
-
-    Object.assign(window, { setCat, setChip, applyFilters, doSearch, setPill, setView, toggleSave, callOwner });
-
-    loadListings();
+    })();
 
     return () => {
       cancelled = true;
-      clearTimeout(toastTimer);
-      io.disconnect();
-      btn.removeEventListener("click", onBtn);
-      document.removeEventListener("click", onDocClick);
-      window.removeEventListener("scroll", onScroll);
-      ["setCat", "setChip", "applyFilters", "doSearch", "setPill", "setView", "toggleSave", "callOwner"].forEach((k) => delete window[k]);
+      cleanupFns.forEach((fn) => fn());
+      Object.keys(handlers).forEach((k) => delete window[k]);
     };
   }, []);
 
-  return <div className="commercial-page" ref={rootRef} dangerouslySetInnerHTML={{ __html: BODY_HTML }} />;
+  return <div className="properties-page" ref={rootRef} dangerouslySetInnerHTML={{ __html: BODY_HTML }} />;
 }
