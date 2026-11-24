@@ -23,24 +23,11 @@ const MARQUEE_ITEMS = [
   { i: "⚡", t: <><strong>Zero Brokerage</strong> Always</> },
   { i: "🔒", t: <><strong>KYC-Verified</strong> Landlords</> },
   { i: "📞", t: <><strong>Direct</strong> Owner Connect</> },
-  { i: "🤖", t: <><strong>AI-Matched</strong> Properties</> },
+  { i: "🏠", t: <><strong>Handpicked</strong> Properties</> },
   { i: "⭐", t: <><strong>4.8/5</strong> Avg Rating</> },
-  { i: "🔧", t: <><strong>500+</strong> Service Professionals</> },
+  { i: "🔧", t: <><strong>Home Services</strong> Coming Soon</> },
   { i: "🏡", t: <><strong>Zero</strong> Hidden Charges</> },
   { i: "📱", t: <><strong>Mobile-Friendly</strong> Platform</> },
-];
-
-const ACTIVITIES = [
-  "New PG listing verified in Kondapur, Hyderabad",
-  "Owner from Bangalore just listed a 2BHK flat",
-  "Electrician booked in Madhapur",
-  "New co-living space listed in Koramangala",
-  "Plumber booking confirmed in Gachibowli",
-  "Property owner completed KYC verification",
-  "New hostel verified in Banjara Hills",
-  "Painter booked in HSR Layout, Bangalore",
-  "New PG listed near HITEC City",
-  "Carpenter service confirmed in Jubilee Hills",
 ];
 
 const SERVICES = [
@@ -70,17 +57,20 @@ const CITIES = [
 ];
 
 const TESTIMONIALS = [
-  { avatar: "A", avatarBg: null, name: "Aditya Sharma", role: "Software Engineer · Hyderabad", quote: "Found my PG in Banjara Hills within two days. Verified photos, direct owner contact, zero brokerage. SmartRent AI is genuinely the best rental platform I have ever used." },
-  { avatar: "P", avatarBg: "linear-gradient(135deg,#e11d48,#9b79ff)", name: "Priya Menon", role: "UX Designer · Bangalore", quote: "The AI matching is remarkably accurate. It surfaced exactly what I needed — a girls-only PG near my office, with meals and AC, under ₹8,000. Moved in within the week." },
+  { avatar: "A", avatarBg: null, name: "Aditya Sharma", role: "Software Engineer · Hyderabad", quote: "Found my PG in Banjara Hills within two days. Verified photos, direct owner contact, zero brokerage. SmartRent is the best rental platform I have ever used." },
+  { avatar: "P", avatarBg: "linear-gradient(135deg,#e11d48,#9b79ff)", name: "Priya Menon", role: "UX Designer · Bangalore", quote: "The search is spot on. It showed exactly what I needed — a girls-only PG near my office, with meals and AC, under ₹8,000. Moved in within the week." },
   { avatar: "R", avatarBg: null, name: "Rajan Verma", role: "Property Owner · Mumbai", quote: "Listing my hostel was effortless and free. I received genuine inquiries within days. The owner dashboard makes managing bookings a real pleasure." },
 ];
 
+const SOON_MSG = "🔒 Home services are coming soon — stay tuned!";
+const LOCKED = { opacity: 0.55, cursor: "not-allowed" };
+
 const FAQS = [
-  { q: "Is SmartRent AI really free for tenants?", a: "Yes. Browsing, searching and directly contacting property owners is completely free for tenants — there is no brokerage fee at any stage." },
+  { q: "Is SmartRent really free for tenants?", a: "Yes. Browsing, searching and directly contacting property owners is completely free for tenants — there is no brokerage fee at any stage." },
   { q: "How are properties verified?", a: "Every listing goes through KYC document checks and a physical ground-team visit before it goes live, so photos and pricing match reality." },
   { q: "How quickly can I list my property?", a: "Most owners go live in under 30 minutes — add your photos, set your price, and verified tenant inquiries start coming in the same day." },
-  { q: "Do you offer home services outside rentals?", a: "Yes — plumbers, electricians, carpenters, painters, movers and cleaners are all bookable directly from the Services menu, verified and background-checked." },
-  { q: "Which cities does SmartRent AI cover?", a: "We currently cover 15+ Indian cities including Hyderabad, Bangalore, Mumbai, Delhi/NCR and Chennai, with more being added regularly." },
+  { q: "Do you offer home services outside rentals?", a: "Not yet — plumbers, electricians, carpenters, painters, movers and cleaners are coming soon. Stay tuned!" },
+  { q: "Which cities does SmartRent cover?", a: "We currently cover 15+ Indian cities including Hyderabad, Bangalore, Mumbai, Delhi/NCR and Chennai, with more being added regularly." },
 ];
 
 const BLOG_POSTS = [
@@ -235,39 +225,8 @@ export default function HomePage() {
     localStorage.setItem("sra_v5", "1");
   }
 
-  /* ── activity ticker ── */
-  const [activities, setActivities] = useState([]);
-  const actIdxRef = useRef(0);
-  const tickerStarted = useRef(false);
-
-  function pushActivity() {
-    const id = Math.random().toString(36).slice(2);
-    const text = ACTIVITIES[actIdxRef.current % ACTIVITIES.length];
-    actIdxRef.current += 1;
-    setActivities((a) => [...a, { id, text, show: false }]);
-    requestAnimationFrame(() => {
-      setActivities((a) => a.map((c) => (c.id === id ? { ...c, show: true } : c)));
-    });
-    setTimeout(() => {
-      setActivities((a) => a.map((c) => (c.id === id ? { ...c, show: false } : c)));
-      setTimeout(() => setActivities((a) => a.filter((c) => c.id !== id)), 400);
-    }, 5000);
-  }
-
-  useEffect(() => {
-    if (!consentAccepted || tickerStarted.current) return;
-    tickerStarted.current = true;
-    const startDelay = setTimeout(() => {
-      pushActivity();
-    }, 4000);
-    const interval = setInterval(pushActivity, 14000);
-    return () => { clearTimeout(startDelay); clearInterval(interval); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consentAccepted]);
-
   /* ── mobile menu / chat panel / FAQ ── */
   const [mobOpen, setMobOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(null);
 
   /* ── newsletter ── */
@@ -284,6 +243,8 @@ export default function HomePage() {
   /* ── hero search (visual redesign — routes to /properties) ── */
   const [heroLocation, setHeroLocation] = useState("");
   const [heroType, setHeroType] = useState("");
+
+  const soon = () => showToast(SOON_MSG);
 
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -313,23 +274,13 @@ export default function HomePage() {
         <div className="toast" role="status" aria-live="polite">{toast}</div>
       )}
 
-      {/* ACTIVITY TICKER */}
-      <div className="activity-ticker" aria-hidden="true">
-        {activities.map((a) => (
-          <div className={`at-card ${a.show ? "show" : ""}`} key={a.id}>
-            <div className="at-dot" />
-            <div className="at-text">{a.text}</div>
-          </div>
-        ))}
-      </div>
-
       {/* MOBILE MENU */}
       <div className={`mob-menu ${mobOpen ? "open" : ""}`}>
         <Link className="mob-link" href="/pgs-hostels" onClick={() => setMobOpen(false)}>🏠 PG &amp; Hostels</Link>
         <Link className="mob-link" href="/properties" onClick={() => setMobOpen(false)}>🏢 Flats &amp; Apartments</Link>
         <Link className="mob-link" href="/properties" onClick={() => setMobOpen(false)}>🤝 Co-living Spaces</Link>
         <Link className="mob-link" href="/commercial" onClick={() => setMobOpen(false)}>🏪 Commercial</Link>
-        <Link className="mob-link svc" href="/services" onClick={() => setMobOpen(false)}>🔧 Home Services</Link>
+        <span className="mob-link svc" style={LOCKED} onClick={soon}>🔧 Home Services · Stay tuned</span>
         <hr style={{ border: "none", borderTop: "1px solid rgba(15,23,42,.08)", margin: "6px 0" }} />
         {!authUser ? (
           <div>
@@ -349,10 +300,10 @@ export default function HomePage() {
         <div className="con-ov">
           <div className="con-box">
             <span className="con-ic">🏡</span>
-            <div className="con-t">Welcome to SmartRent AI</div>
+            <div className="con-t">Welcome to SmartRent</div>
             <div className="con-p">Before exploring verified properties across India, please accept our Privacy Policy and Terms of Service. We use cookies to personalise your rental search experience.</div>
             <button className="con-btn" onClick={acceptConsent}>✓ Accept &amp; Explore Properties</button>
-            <div className="con-note">By continuing you agree to our <Link href="/privacy-policy">Privacy Policy</Link> &amp; <Link href="/privacy-policy">Terms of Service</Link></div>
+            <div className="con-note">By continuing you agree to our <Link href="/privacy">Privacy Policy</Link> &amp; <Link href="/terms">Terms of Service</Link></div>
           </div>
         </div>
       )}
@@ -364,7 +315,7 @@ export default function HomePage() {
           <div className="nav-wordmark">
             <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}>
               <span className="nw-sr">SmartRent</span>
-              <span className="nw-ai">AI</span>
+              
             </div>
           </div>
         </Link>
@@ -386,22 +337,12 @@ export default function HomePage() {
           </div>
 
           <div className="nav-dd">
-            <button className="nav-dd-btn" style={{ color: "var(--teal)", fontWeight: 700 }}>
-              🔧 Services
-              <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <button className="nav-dd-btn" style={{ ...LOCKED, fontWeight: 700 }} onClick={soon}>
+              🔧 Services <span className="nav-badge">SOON</span>
             </button>
-            <div className="nav-dd-panel">
-              <Link className="dd-item svc" href="/plumber"><span className="dd-item-ic">🔧</span>Plumber</Link>
-              <Link className="dd-item svc" href="/electrician"><span className="dd-item-ic">⚡</span>Electrician</Link>
-              <Link className="dd-item svc" href="/carpenter"><span className="dd-item-ic">🪚</span>Carpenter</Link>
-              <Link className="dd-item svc" href="/painter"><span className="dd-item-ic">🎨</span>Painter</Link>
-              <Link className="dd-item svc" href="/movers-packers"><span className="dd-item-ic">🚚</span>Movers &amp; Packers</Link>
-              <Link className="dd-item svc" href="/home-cleaner"><span className="dd-item-ic">🧹</span>Home Cleaner</Link>
-            </div>
           </div>
 
           <Link className="nav-a" href="/post-property">List Property <span className="nav-badge">FREE</span></Link>
-          <Link className="nav-a" href="/plans">Pricing</Link>
         </div>
 
         <div className="nav-right">
@@ -441,7 +382,7 @@ export default function HomePage() {
         <div className="hero-bg" />
         <div className="hero-spark" />
 
-        <div className="h-eye"><span className="live-dot" />AI-Powered · Zero Brokerage · India</div>
+        <div className="h-eye"><span className="live-dot" />Zero Brokerage · Verified Listings · India</div>
 
         <h1 className="h-title">Find Your<br /><em>Perfect Rental</em></h1>
         <div className="h-sub-serif">Homes that feel like home.</div>
@@ -465,14 +406,14 @@ export default function HomePage() {
 
         <div className="hero-ctas">
           <Link className="h-btn-main" href="/properties">🏠 Browse Rentals</Link>
-          <Link className="h-btn-sec" href="/services">🔧 Explore Services</Link>
+          <button className="h-btn-sec" style={LOCKED} onClick={soon}>🔧 Services · Stay tuned</button>
           <Link className="h-btn-sec" href="/post-property">✦ List Property Free</Link>
         </div>
 
         <div className="trust-float">
           <div className="tf-card"><span className="tf-ic">✅</span> KYC Verified Owners</div>
           <div className="tf-card"><span className="tf-ic">⚡</span> Zero Brokerage</div>
-          <div className="tf-card"><span className="tf-ic">🤖</span> AI Matched</div>
+          <div className="tf-card"><span className="tf-ic">🏠</span> Handpicked Homes</div>
           <div className="tf-card"><span className="tf-ic">🔒</span> Secure Platform</div>
           <div className="tf-card"><span className="tf-ic">📞</span> Direct Connect</div>
         </div>
@@ -524,17 +465,17 @@ export default function HomePage() {
               <h2 className="sh2">Everything Your Home<br /><em>Needs, On Demand</em></h2>
               <p className="sp">Verified, background-checked professionals for all your home maintenance needs — book in minutes, get it done today.</p>
             </div>
-            <Link className="svc-cta-link" href="/services">View all services →</Link>
+            <span className="svc-cta-link" style={LOCKED} onClick={soon}>🔒 Stay tuned</span>
           </div>
           <div className="svc-grid-6 rv d1" ref={addRevRef}>
             {SERVICES.map((s) => (
-              <Link className="sc" href={s.href} style={{ "--scc": s.c1, "--scc2": s.c2 }} key={s.name}>
-                <span className="sc-icon">{s.icon}</span>
+              <div className="sc" style={{ "--scc": s.c1, "--scc2": s.c2, cursor: "not-allowed", position: "relative" }} key={s.name} onClick={soon} role="button" aria-disabled="true">
+                <span className="sc-icon" style={{ filter: "grayscale(.6)" }}>{s.icon}</span>
                 <div className="sc-name">{s.name}</div>
                 <div className="sc-desc">{s.desc}</div>
-                <div className="sc-meta"><span className="sc-tag">✓ Verified</span><span className="sc-price">{s.price}</span></div>
-                <button className="sc-btn">Explore →</button>
-              </Link>
+                <div className="sc-meta"><span className="sc-tag">🔒 Stay tuned</span></div>
+                <button className="sc-btn" disabled style={{ cursor: "not-allowed", opacity: 0.6 }}>Coming Soon</button>
+              </div>
             ))}
           </div>
         </div>
@@ -553,7 +494,7 @@ export default function HomePage() {
               <div className="how-n">01</div>
               <div className="how-ib">🔍</div>
               <div className="how-t">Search &amp; Filter</div>
-              <div className="how-d">Enter your locality, budget and property type. Our AI instantly surfaces the most relevant verified listings tailored to your commute and lifestyle.</div>
+              <div className="how-d">Enter your locality, budget and property type. We show you the most relevant verified listings for your commute and lifestyle.</div>
             </div>
             <div className="how-step">
               <div className="how-n">02</div>
@@ -586,9 +527,9 @@ export default function HomePage() {
           </div>
           <div className="feat-grid rv d1" ref={addRevRef}>
             <div className="fc" style={{ "--fcc": "var(--gold)", "--fcb": "var(--gold-b)", "--fcbg": "rgba(37,99,235,.025)" }}>
-              <div className="fc-ic">🤖</div>
-              <div className="fc-t">AI-Powered Matching</div>
-              <div className="fc-d">Our ML engine analyses your commute, budget, lifestyle and browsing history to surface properties you&apos;ll genuinely love — not just keyword matches.</div>
+              <div className="fc-ic">🎯</div>
+              <div className="fc-t">Matched To You</div>
+              <div className="fc-d">Filter by commute, budget and lifestyle to find properties you&apos;ll love — not just a long list of keyword matches.</div>
             </div>
             <div className="fc" style={{ "--fcc": "var(--teal)", "--fcb": "var(--teal-b)", "--fcbg": "rgba(16,185,129,.025)" }}>
               <div className="fc-ic">✅</div>
@@ -756,7 +697,7 @@ export default function HomePage() {
           <div className="rv" ref={addRevRef}>
             <div className="eyebrow app-eyebrow">Coming To Mobile</div>
             <h2 className="app-h2">Take Your Rental<br />Search <em>Everywhere</em></h2>
-            <p className="app-p">Search, shortlist and chat with verified owners on the go. The SmartRent AI app brings the same zero-brokerage, AI-matched experience to your pocket.</p>
+            <p className="app-p">Search, shortlist and chat with verified owners on the go. The SmartRent app brings the same zero-brokerage experience to your pocket.</p>
             <div className="app-badges">
               <a className="app-badge" href="#" onClick={(e) => { e.preventDefault(); showToast("📱 App launching soon — join the waitlist!"); }}>
                 <span className="app-badge-ic">🍎</span>
@@ -772,11 +713,11 @@ export default function HomePage() {
             <div className="app-phone">
               <div className="app-phone-screen">
                 <div className="app-phone-logo">💎</div>
-                <div className="app-phone-txt">SmartRent AI<br /><span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>Rentals · Services</span></div>
+                <div className="app-phone-txt">SmartRent<br /><span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>Rentals</span></div>
               </div>
             </div>
             <div className="app-float-card c1"><span className="afc-ic">✅</span><span><div className="afc-txt-t">Verified PG</div><div className="afc-txt-s">Kondapur, Hyderabad</div></span></div>
-            <div className="app-float-card c2"><span className="afc-ic">🔧</span><span><div className="afc-txt-t">Plumber booked</div><div className="afc-txt-s">Arriving in 40 min</div></span></div>
+            <div className="app-float-card c2"><span className="afc-ic">📞</span><span><div className="afc-txt-t">Direct owner contact</div><div className="afc-txt-s">Zero brokerage</div></span></div>
           </div>
         </div>
       </section>
@@ -805,9 +746,9 @@ export default function HomePage() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 16 }}>
                 <div className="nav-gem" style={{ width: 30, height: 30, fontSize: 14 }}>💎</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}><span className="nw-sr" style={{ fontSize: 17, color: "#fff" }}>SmartRent</span><span className="nw-ai">AI</span></div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}><span className="nw-sr" style={{ fontSize: 17, color: "#fff" }}>SmartRent</span></div>
               </div>
-              <p className="fb-desc">India&apos;s most intelligent rental platform. AI-powered matching for PGs, hostels, flats &amp; co-living — zero brokerage, fully verified.</p>
+              <p className="fb-desc">India&apos;s trusted rental platform for PGs, hostels, flats &amp; co-living — zero brokerage, fully verified.</p>
               <div className="socials">
                 <a className="soc" href="#" title="Twitter">𝕏</a>
                 <a className="soc" href="#" title="Instagram">📸</a>
@@ -825,27 +766,26 @@ export default function HomePage() {
             </div>
             <div>
               <div className="ffc-t">Home Services</div>
-              <Link className="fl" href="/plumber">→ Plumber</Link>
-              <Link className="fl" href="/electrician">→ Electrician</Link>
-              <Link className="fl" href="/carpenter">→ Carpenter</Link>
-              <Link className="fl" href="/painter">→ Painter</Link>
-              <Link className="fl" href="/movers-packers">→ Movers &amp; Packers</Link>
-              <Link className="fl" href="/home-cleaner">→ Home Cleaner</Link>
+              <span className="fl" style={LOCKED} onClick={soon}>→ Plumber · Stay tuned</span>
+              <span className="fl" style={LOCKED} onClick={soon}>→ Electrician · Stay tuned</span>
+              <span className="fl" style={LOCKED} onClick={soon}>→ Carpenter · Stay tuned</span>
+              <span className="fl" style={LOCKED} onClick={soon}>→ Painter · Stay tuned</span>
+              <span className="fl" style={LOCKED} onClick={soon}>→ Movers &amp; Packers · Stay tuned</span>
+              <span className="fl" style={LOCKED} onClick={soon}>→ Home Cleaner · Stay tuned</span>
             </div>
             <div>
               <div className="ffc-t">Company</div>
               <Link className="fl" href="/about-us">→ About Us</Link>
               <Link className="fl" href="/post-property">→ List Property Free</Link>
               <Link className="fl" href="/profile">→ Owner Dashboard</Link>
-              <Link className="fl" href="/plans">→ Pricing Plans</Link>
               <Link className="fl" href="/privacy">→ Privacy Policy</Link>
               <Link className="fl" href="/contact">→ Contact Us</Link>
             </div>
           </div>
           <div className="foot-bot">
             <div className="foot-copy">
-              © 2025–2026 SmartRent AI. All rights reserved. Built with ❤️ in India.<br />
-              <Link href="/privacy-policy">Privacy Policy</Link> · <Link href="/privacy-policy">Terms of Service</Link>
+              © 2025–2026 SmartRent. All rights reserved. Built with ❤️ in India.<br />
+              <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms of Service</Link>
             </div>
             <div className="foot-badges">
               <span className="fbdg">GDPR READY</span><span className="fbdg">IT ACT 2000</span><span className="fbdg">DPDP 2023</span><span className="fbdg">SSL SECURED</span>
@@ -858,15 +798,6 @@ export default function HomePage() {
 
       <button className={`bt-top ${showBackTop ? "show" : ""}`} onClick={scrollToTop} aria-label="Back to top">↑</button>
 
-      <button className="chat-widget" onClick={() => setChatOpen((o) => !o)} aria-label="Open chat">💬</button>
-      <div className={`chat-panel ${chatOpen ? "show" : ""}`}>
-        <div className="chat-head">
-          <div className="chat-head-t">Need help?</div>
-          <div className="chat-head-s">We usually reply within minutes</div>
-        </div>
-        <div className="chat-body">Have a question about a property, booking, or your listing? Our team is here to help.</div>
-        <Link className="chat-cta" href="/contact">Start a conversation →</Link>
-      </div>
     </div>
   );
 }
