@@ -1,0 +1,180 @@
+.tenant-guide-page{min-height:100vh;position:relative}
+.tenant-guide-page{
+  --bg:#030508;--bg1:#060910;--bg2:#091018;--bg3:#0d1825;--bg4:#11202e;
+  --blue:#3b82f6;--blue-lt:#60a5fa;--blue-d:rgba(59,130,246,.1);--blue-b:rgba(59,130,246,.24);
+  --violet:#7c3aed;--violet-d:rgba(124,58,237,.1);--violet-b:rgba(124,58,237,.22);
+  --cyan:#06b6d4;--cyan-d:rgba(6,182,212,.1);--cyan-b:rgba(6,182,212,.22);
+  --green:#10b981;--green-d:rgba(16,185,129,.1);--green-b:rgba(16,185,129,.22);
+  --rose:#f43f5e;--rose-d:rgba(244,63,94,.1);--rose-b:rgba(244,63,94,.22);
+  --amber:#f59e0b;--amber-d:rgba(245,158,11,.1);--amber-b:rgba(245,158,11,.22);
+  --t0:#f0f4ff;--t1:rgba(220,230,255,.82);--t2:rgba(178,196,248,.52);--t3:rgba(138,162,230,.3);
+  --div:rgba(59,130,246,.07);--div2:rgba(255,255,255,.07);
+  --r1:7px;--r2:13px;--r3:19px;--r4:26px;
+}
+.tenant-guide-page,.tenant-guide-page *,.tenant-guide-page *::before,.tenant-guide-page *::after{box-sizing:border-box;margin:0;padding:0}
+.tenant-guide-page{scroll-behavior:smooth}
+.tenant-guide-page{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t0);overflow-x:hidden;line-height:1.7}
+.tenant-guide-page ::-webkit-scrollbar{width:4px}
+.tenant-guide-page ::-webkit-scrollbar-track{background:var(--bg)}
+.tenant-guide-page ::-webkit-scrollbar-thumb{background:var(--blue-b);border-radius:2px}
+.tenant-guide-page ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
+.tenant-guide-page .amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.tenant-guide-page .orb{position:absolute;border-radius:50%;filter:blur(110px);animation:ofl 22s ease-in-out infinite alternate}
+.tenant-guide-page .o1{width:700px;height:700px;top:-220px;left:-190px;background:radial-gradient(circle,rgba(59,130,246,.055) 0%,transparent 68%)}
+.tenant-guide-page .o2{width:550px;height:550px;bottom:-190px;right:-160px;background:radial-gradient(circle,rgba(124,58,237,.05) 0%,transparent 68%);animation-delay:-10s}
+.tenant-guide-page .o3{width:400px;height:400px;top:45%;left:38%;background:radial-gradient(circle,rgba(6,182,212,.03) 0%,transparent 68%);animation-delay:-16s}
+@keyframes ofl{0%{transform:translate(0,0) scale(1)}45%{transform:translate(30px,-22px) scale(1.06)}80%{transform:translate(-16px,18px) scale(.97)}100%{transform:translate(12px,-8px) scale(1.03)}}
+.tenant-guide-page .bg-noise{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.36}
+.tenant-guide-page .bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(59,130,246,.032) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.032) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(ellipse 88% 75% at 50% 25%,black 0%,transparent 100%)}
+.tenant-guide-page .nav{position:fixed;top:0;left:0;right:0;z-index:900;height:62px;display:flex;align-items:center;padding:0 32px;background:rgba(3,5,8,.78);backdrop-filter:blur(28px);border-bottom:1px solid var(--div);transition:all .3s}
+.tenant-guide-page .nav.solid{background:rgba(3,5,8,.97);box-shadow:0 1px 0 var(--blue-b),0 6px 36px rgba(0,0,0,.5)}
+.tenant-guide-page .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.tenant-guide-page .bgem{width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#7c3aed);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 14px rgba(59,130,246,.3);flex-shrink:0}
+.tenant-guide-page .bname{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--t0);letter-spacing:.01em}
+.tenant-guide-page .bai{font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:600;letter-spacing:.16em;color:var(--cyan);background:var(--cyan-d);border:1px solid var(--cyan-b);padding:1px 4px;border-radius:3px;margin-left:4px;align-self:flex-end;margin-bottom:1px}
+.tenant-guide-page .nav-links{display:flex;align-items:center;gap:1px;margin:0 auto;padding:0 20px}
+.tenant-guide-page .nl{padding:6px 13px;border-radius:var(--r1);font-size:13px;font-weight:500;color:var(--t2);text-decoration:none;transition:all .18s}
+.tenant-guide-page .nl:hover{color:var(--t0)}
+.tenant-guide-page .nl.on{color:var(--blue-lt)}
+.tenant-guide-page .nav-r{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.tenant-guide-page .nb{padding:7px 15px;border-radius:var(--r1);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.tenant-guide-page .nb-gh{background:transparent;border:1px solid var(--div2);color:var(--t1)}
+.tenant-guide-page .nb-gh:hover{border-color:var(--blue-b);color:var(--blue-lt)}
+.tenant-guide-page .nb-blue{background:linear-gradient(135deg,var(--blue),var(--violet));border:none;color:#fff;font-weight:700}
+.tenant-guide-page .nb-blue:hover{box-shadow:0 0 24px rgba(59,130,246,.4);transform:translateY(-1px)}
+.tenant-guide-page .mob-btn{display:none;width:36px;height:36px;border-radius:var(--r1);border:1px solid var(--div2);background:transparent;font-size:18px;color:var(--t1);cursor:pointer;align-items:center;justify-content:center}
+.tenant-guide-page .mob-menu{display:none;position:fixed;top:62px;left:0;right:0;background:rgba(3,5,8,.99);border-bottom:1px solid var(--blue-b);padding:20px 28px;z-index:800;flex-direction:column;gap:0}
+.tenant-guide-page .mob-menu.open{display:flex}
+.tenant-guide-page .ml{padding:11px 0;font-size:14px;color:var(--t1);text-decoration:none;border-bottom:1px solid rgba(59,130,246,.07);display:flex;align-items:center;gap:8px}
+.tenant-guide-page .ml:last-of-type{border-bottom:none}
+.tenant-guide-page .ml:hover{color:var(--blue-lt)}
+.tenant-guide-page .hero{position:relative;z-index:1;padding:96px 24px 0;overflow:hidden}
+.tenant-guide-page .hero-inner{max-width:1260px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding-bottom:56px}
+.tenant-guide-page .hero-left{}
+.tenant-guide-page .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--blue-d);border:1px solid var(--blue-b);border-radius:100px;padding:5px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--blue-lt);letter-spacing:.2em;text-transform:uppercase;margin-bottom:22px;animation:su .7s both}
+.tenant-guide-page .ldot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:lpulse 2s infinite}
+@keyframes lpulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.tenant-guide-page .hero-t{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,5.5vw,72px);font-weight:800;line-height:.92;letter-spacing:-.02em;color:var(--t0);margin-bottom:10px;animation:su .8s .08s both}
+.tenant-guide-page .hero-t em{font-style:italic;background:linear-gradient(135deg,var(--blue-lt),var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tenant-guide-page .hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(16px,2vw,24px);font-style:italic;font-weight:400;color:var(--t2);margin-bottom:18px;animation:su .8s .16s both}
+.tenant-guide-page .hero-desc{font-size:15px;color:var(--t2);max-width:480px;margin-bottom:32px;animation:su .8s .24s both;line-height:1.82}
+.tenant-guide-page .hero-ctas{display:flex;gap:10px;flex-wrap:wrap;animation:su .8s .32s both}
+.tenant-guide-page .hc-main{padding:12px 26px;border-radius:var(--r1);background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;font-weight:700;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all .22s}
+.tenant-guide-page .hc-main:hover{box-shadow:0 0 28px rgba(59,130,246,.45);transform:translateY(-1px)}
+.tenant-guide-page .hc-sec{padding:11px 20px;border-radius:var(--r1);background:transparent;border:1px solid var(--div2);color:var(--t1);font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.tenant-guide-page .hc-sec:hover{border-color:var(--blue-b);color:var(--blue-lt)}
+.tenant-guide-page .hero-right{animation:su .8s .16s both}
+.tenant-guide-page .hero-stats-stack{display:flex;flex-direction:column;gap:12px}
+.tenant-guide-page .hss{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:var(--r2);padding:18px 20px;display:flex;align-items:center;gap:16px;transition:all .3s}
+.tenant-guide-page .hss:hover{border-color:var(--blue-b);background:var(--blue-d)}
+.tenant-guide-page .hss-icon{font-size:28px;flex-shrink:0}
+.tenant-guide-page .hss-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:800;color:var(--blue-lt);margin-bottom:2px;line-height:1}
+.tenant-guide-page .hss-lbl{font-size:12px;color:var(--t2)}
+@keyframes su{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.tenant-guide-page .page-wrap{display:grid;grid-template-columns:270px 1fr;gap:28px;max-width:1260px;margin:0 auto;padding:48px 28px 100px;position:relative;z-index:1;align-items:start}
+.tenant-guide-page .toc{position:sticky;top:82px}
+.tenant-guide-page .toc-card{background:var(--bg2);border:1px solid rgba(59,130,246,.12);border-radius:var(--r3);padding:22px;margin-bottom:14px}
+.tenant-guide-page .toc-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--blue-lt);margin-bottom:16px}
+.tenant-guide-page .toc-list{display:flex;flex-direction:column;gap:0}
+.tenant-guide-page .toc-item{padding:8px 12px;border-radius:var(--r1);font-size:13px;color:var(--t2);text-decoration:none;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:9px;border:1px solid transparent}
+.tenant-guide-page .toc-item:hover{color:var(--t0);background:rgba(255,255,255,.04)}
+.tenant-guide-page .toc-item.active{color:var(--blue-lt);background:var(--blue-d);border-color:var(--blue-b)}
+.tenant-guide-page .toc-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:.06em}
+.tenant-guide-page .toc-item.active .toc-num{color:var(--blue-lt)}
+.tenant-guide-page .search-card{background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid var(--blue-b);border-radius:var(--r3);padding:22px;position:relative;overflow:hidden}
+.tenant-guide-page .search-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+.tenant-guide-page .sc-t{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--t0);margin-bottom:8px}
+.tenant-guide-page .sc-d{font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.7}
+.tenant-guide-page .sc-btn{display:block;width:100%;padding:11px;border-radius:var(--r1);background:linear-gradient(135deg,var(--blue),var(--violet));border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;transition:all .2s;margin-bottom:8px}
+.tenant-guide-page .sc-btn:hover{box-shadow:0 0 20px rgba(59,130,246,.4);transform:translateY(-1px)}
+.tenant-guide-page .sc-btn-sec{display:block;width:100%;padding:10px;border-radius:var(--r1);background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:all .2s}
+.tenant-guide-page .sc-btn-sec:hover{border-color:var(--blue-b);color:var(--blue-lt)}
+.tenant-guide-page .guide-sec{background:var(--bg2);border:1px solid var(--div2);border-radius:var(--r4);margin-bottom:24px;overflow:hidden;scroll-margin-top:82px}
+.tenant-guide-page .gs-head{padding:28px 32px 22px;border-bottom:1px solid rgba(59,130,246,.07)}
+.tenant-guide-page .gs-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:7px;display:flex;align-items:center;gap:7px}
+.tenant-guide-page .gs-eyebrow::before{content:'';width:16px;height:1px;background:var(--blue-lt)}
+.tenant-guide-page .gs-title{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2.5vw,28px);font-weight:700;color:var(--t0);margin-bottom:6px;letter-spacing:-.01em}
+.tenant-guide-page .gs-title em{font-style:italic;color:var(--blue-lt)}
+.tenant-guide-page .gs-sub{font-size:14px;color:var(--t2)}
+.tenant-guide-page .gs-body{padding:28px 32px}
+.tenant-guide-page .para{font-size:14px;color:var(--t1);line-height:1.88;margin-bottom:18px}
+.tenant-guide-page .para:last-child{margin-bottom:0}
+.tenant-guide-page .para strong{color:var(--t0);font-weight:600}
+.tenant-guide-page .para a{color:var(--blue-lt);text-decoration:none}
+.tenant-guide-page .para a:hover{text-decoration:underline}
+.tenant-guide-page .step-list{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+.tenant-guide-page .step-item{display:flex;gap:16px;align-items:flex-start;background:var(--bg3);border:1px solid rgba(255,255,255,.06);border-radius:var(--r2);padding:16px;transition:all .2s}
+.tenant-guide-page .step-item:hover{border-color:var(--blue-b);background:var(--blue-d)}
+.tenant-guide-page .step-num{width:32px;height:32px;border-radius:50%;background:var(--blue-d);border:1px solid var(--blue-b);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--blue-lt);flex-shrink:0}
+.tenant-guide-page .step-t{font-size:14px;font-weight:700;color:var(--t0);margin-bottom:4px}
+.tenant-guide-page .step-d{font-size:13px;color:var(--t2);line-height:1.72}
+.tenant-guide-page .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.tenant-guide-page .info-card{background:var(--bg3);border:1px solid rgba(255,255,255,.06);border-radius:var(--r2);padding:18px}
+.tenant-guide-page .info-card.ic-blue{border-color:var(--blue-b);background:var(--blue-d)}
+.tenant-guide-page .info-card.ic-green{border-color:var(--green-b);background:var(--green-d)}
+.tenant-guide-page .info-card.ic-rose{border-color:var(--rose-b);background:var(--rose-d)}
+.tenant-guide-page .info-card.ic-amber{border-color:var(--amber-b);background:var(--amber-d)}
+.tenant-guide-page .ic-icon{font-size:24px;margin-bottom:10px;display:block}
+.tenant-guide-page .ic-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--t0);margin-bottom:5px}
+.tenant-guide-page .ic-body{font-size:12.5px;color:var(--t2);line-height:1.72}
+.tenant-guide-page .check-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.tenant-guide-page .check-item{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--t1);line-height:1.65}
+.tenant-guide-page .check-ic{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:2px}
+.tenant-guide-page .ci-yes{background:var(--green-d);border:1px solid var(--green-b);color:var(--green)}
+.tenant-guide-page .ci-no{background:var(--rose-d);border:1px solid var(--rose-b);color:var(--rose)}
+.tenant-guide-page .ci-warn{background:var(--amber-d);border:1px solid var(--amber-b);color:var(--amber)}
+.tenant-guide-page .ci-info{background:var(--blue-d);border:1px solid var(--blue-b);color:var(--blue-lt)}
+.tenant-guide-page .guide-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13px}
+.tenant-guide-page .guide-table th{padding:11px 14px;background:var(--bg4);border:1px solid rgba(255,255,255,.06);color:var(--blue-lt);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-align:left;font-weight:600}
+.tenant-guide-page .guide-table td{padding:11px 14px;border:1px solid rgba(255,255,255,.05);color:var(--t1);vertical-align:top;line-height:1.65}
+.tenant-guide-page .guide-table tr:hover td{background:rgba(255,255,255,.02)}
+.tenant-guide-page .callout{border-radius:var(--r2);padding:16px 18px;margin-bottom:18px;display:flex;gap:13px;align-items:flex-start}
+.tenant-guide-page .callout-ic{font-size:20px;flex-shrink:0;margin-top:1px}
+.tenant-guide-page .callout-body{font-size:13.5px;line-height:1.72}
+.tenant-guide-page .callout-t{font-weight:700;margin-bottom:4px}
+.tenant-guide-page .co-blue{background:var(--blue-d);border:1px solid var(--blue-b)}
+.tenant-guide-page .co-blue .callout-t{color:var(--blue-lt)}
+.tenant-guide-page .co-green{background:var(--green-d);border:1px solid var(--green-b)}
+.tenant-guide-page .co-green .callout-t{color:var(--green)}
+.tenant-guide-page .co-rose{background:var(--rose-d);border:1px solid var(--rose-b)}
+.tenant-guide-page .co-rose .callout-t{color:var(--rose)}
+.tenant-guide-page .co-amber{background:var(--amber-d);border:1px solid var(--amber-b)}
+.tenant-guide-page .co-amber .callout-t{color:var(--amber)}
+.tenant-guide-page .shead{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--t0);margin:24px 0 12px;letter-spacing:-.005em}
+.tenant-guide-page .shead em{font-style:italic;color:var(--blue-lt)}
+.tenant-guide-page .faq-list{display:flex;flex-direction:column;gap:10px}
+.tenant-guide-page .faq-item{background:var(--bg3);border:1px solid rgba(255,255,255,.06);border-radius:var(--r2);overflow:hidden}
+.tenant-guide-page .faq-q{padding:15px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;color:var(--t0);transition:background .2s}
+.tenant-guide-page .faq-q:hover{background:rgba(255,255,255,.03)}
+.tenant-guide-page .faq-q.open{color:var(--blue-lt);background:var(--blue-d)}
+.tenant-guide-page .faq-arr{transition:transform .25s;flex-shrink:0;color:var(--t3);font-size:12px}
+.tenant-guide-page .faq-q.open .faq-arr{transform:rotate(180deg);color:var(--blue-lt)}
+.tenant-guide-page .faq-a{display:none;padding:0 18px 16px;font-size:13.5px;color:var(--t2);line-height:1.78}
+.tenant-guide-page .faq-a.open{display:block}
+.tenant-guide-page .alert-stripe{border-radius:var(--r2);padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;margin-bottom:14px;font-weight:500}
+.tenant-guide-page .as-blue{background:var(--blue-d);border:1px solid var(--blue-b);color:var(--blue-lt)}
+.tenant-guide-page .as-green{background:var(--green-d);border:1px solid var(--green-b);color:var(--green)}
+.tenant-guide-page .budget-calc{background:var(--bg3);border:1px solid rgba(59,130,246,.15);border-radius:var(--r2);padding:22px;margin-bottom:18px}
+.tenant-guide-page .bc-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--t0);margin-bottom:16px}
+.tenant-guide-page .bc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.tenant-guide-page .bc-field label{font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px}
+.tenant-guide-page .bc-field input,.tenant-guide-page .bc-field select{width:100%;background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:var(--r1);padding:10px 12px;color:var(--t0);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:all .2s}
+.tenant-guide-page .bc-field input:focus,.tenant-guide-page .bc-field select:focus{border-color:var(--blue-b)}
+.tenant-guide-page .bc-field select option{background:var(--bg2)}
+.tenant-guide-page .bc-result{background:var(--bg2);border:1px solid var(--blue-b);border-radius:var(--r1);padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tenant-guide-page .brr-item{text-align:center}
+.tenant-guide-page .brr-v{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:800;color:var(--blue-lt);margin-bottom:3px}
+.tenant-guide-page .brr-l{font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+.tenant-guide-page .rv{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1)}
+.tenant-guide-page .rv.in{opacity:1;transform:translateY(0)}
+.tenant-guide-page .rv.d1{transition-delay:.08s}
+.tenant-guide-page .rv.d2{transition-delay:.16s}
+.tenant-guide-page .progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));z-index:1000;transition:width .2s}
+@media(max-width:1000px){.tenant-guide-page .page-wrap{grid-template-columns:1fr}
+.tenant-guide-page .toc{position:static}
+.tenant-guide-page .hero-inner{grid-template-columns:1fr}
+.tenant-guide-page .hero-right{display:none}
+.tenant-guide-page .nav-links{display:none}
+.tenant-guide-page .mob-btn{display:flex}}
+@media(max-width:640px){.tenant-guide-page .info-grid{grid-template-columns:1fr}
+.tenant-guide-page .bc-grid{grid-template-columns:1fr}}
