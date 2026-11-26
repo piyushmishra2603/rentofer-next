@@ -27,7 +27,7 @@ const BODY_HTML = `
 <nav class="nav" id="navbar">
   <a href="/" class="brand">
     <div class="bgem">💎</div>
-    <span class="bname">SmartRent</span>
+    <span class="bname">Rentofer</span>
   </a>
   <div class="nav-links">
     <a class="nl" href="/">Home</a>
